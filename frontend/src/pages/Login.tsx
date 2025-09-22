@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { login as loginAPI } from "../api/authService";
+import AuthLayout from "../components/AuthLayout";
 
 export default function Login() {
   const { login } = useAuth();
@@ -22,28 +23,45 @@ export default function Login() {
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit} className="card p-3 shadow">
+    <AuthLayout title="Estacionamento Inteligente" subtitle="Acesse sua conta">
+      <form onSubmit={handleSubmit}>
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           type="text"
           placeholder="Usuário"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
-          className="form-control mb-2"
+          className="form-control mb-3"
           type="password"
           placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
         {error && <div className="alert alert-danger">{error}</div>}
-        <button className="btn btn-primary w-100" type="submit">
+        <button
+          className="btn w-100"
+          type="submit"
+          style={{
+            backgroundColor: "#ffc107",
+            color: "#1e3c72",
+            fontWeight: "bold",
+          }}
+        >
           Entrar
         </button>
       </form>
-    </div>
+
+      <p className="text-center mt-3 mb-0">
+        Não tem conta?{" "}
+        <span
+          style={{ color: "#2a5298", fontWeight: "bold", cursor: "pointer" }}
+          onClick={() => navigate("/cadastro")}
+        >
+          Cadastre-se
+        </span>
+      </p>
+    </AuthLayout>
   );
 }
