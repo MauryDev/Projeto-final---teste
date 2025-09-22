@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { createUsuario } from "../../api/usuarioService";
+import { createUsuario } from "../api/usuarioService";
 
 type FormValues = {
   username: string;

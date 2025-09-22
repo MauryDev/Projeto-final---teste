@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { login as loginAPI } from "../../api/authService";
+import { useAuth } from "../hooks/useAuth";
+import { login as loginAPI } from "../api/authService";
 
 export default function Login() {
   const { login } = useAuth();

@@ -1,5 +1,3 @@
-// types/index.ts
-
 // Interface para representar os dados de um usuário
 export interface User {
   id: string;
