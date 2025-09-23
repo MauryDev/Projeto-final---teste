@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import br.edu.ifba.park.iot.backend.infra.exception.notfound.EntityNotFoundException;
 import br.edu.ifba.park.iot.backend.infra.exception.password.PasswordInvalidException;
 import br.edu.ifba.park.iot.backend.infra.exception.username.UsernameUniqueViolationException;
-import br.edu.ifba.park.iot.backend.repository.UsuarioRepository;
 import br.edu.ifba.park.iot.backend.security.model.Usuario;
+import br.edu.ifba.park.iot.backend.security.repository.UsuarioRepository;
 
 import java.util.List;
 

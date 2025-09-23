@@ -1,4 +1,4 @@
-package br.edu.ifba.park.iot.backend.model.dto.mapper.cliente;
+package br.edu.ifba.park.iot.backend.model.dto.cliente.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

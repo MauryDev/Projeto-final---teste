@@ -1,4 +1,4 @@
-package br.edu.ifba.park.iot.backend.repository;
+package br.edu.ifba.park.iot.backend.security.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
