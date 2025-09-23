@@ -1,5 +1,6 @@
 package br.edu.ifba.park.iot.backend.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +22,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
   // Encontra todas as reservas de um usuário
   List<Reservation> findByUser(Usuario user);
+
+  List<Reservation> findByEndTimeBefore(LocalDateTime now);
 }
