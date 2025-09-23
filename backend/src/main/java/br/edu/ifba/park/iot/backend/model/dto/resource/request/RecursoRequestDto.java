@@ -8,13 +8,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceRequestDto {
+public class RecursoRequestDto {
+
   @NotBlank
-  private String name;
+  private String nome;
 
   @NotBlank
   private String status;
 
   @NotBlank
-  private String type;
+  private String tipo;
 }

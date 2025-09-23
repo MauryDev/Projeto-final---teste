@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResourceResponseDto {
+public class RecursoResponseDto {
   private Long id;
-  private String name;
+  private String nome;
   private String status;
-  private String type;
+  private String tipo;
 }

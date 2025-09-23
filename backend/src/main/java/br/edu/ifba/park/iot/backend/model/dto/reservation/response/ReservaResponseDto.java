@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReservationResponseDto {
+public class ReservaResponseDto {
   private Long id;
-  private Long resourceId;
-  private String resourceName;
-  private Long userId;
-  private String userName;
-  private LocalDateTime startTime;
-  private LocalDateTime endTime;
+  private Long recursoId;
+  private String nomeRecurso;
+  private Long usuarioId;
+  private String nomeUsuario;
+  private LocalDateTime horarioInicio;
+  private LocalDateTime horarioFim;
 }

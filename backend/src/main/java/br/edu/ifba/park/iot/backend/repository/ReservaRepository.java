@@ -7,21 +7,21 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import br.edu.ifba.park.iot.backend.model.Reservation;
-import br.edu.ifba.park.iot.backend.model.Resource;
+import br.edu.ifba.park.iot.backend.model.Reserva;
+import br.edu.ifba.park.iot.backend.model.Recurso;
 import br.edu.ifba.park.iot.backend.security.model.Usuario;
 
 @Repository
-public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
   // Verifica se um usuário já possui uma reserva ativa para um recurso específico
-  boolean existsByUserAndResource(Usuario user, Resource resource);
+  boolean existsByUsuarioAndRecurso(Usuario usuario, Recurso recurso);
 
   // Encontra uma reserva ativa de um usuário para um recurso específico
-  Optional<Reservation> findByUserAndResource(Usuario user, Resource resource);
+  Optional<Reserva> findByUsuarioAndRecurso(Usuario usuario, Recurso recurso);
 
   // Encontra todas as reservas de um usuário
-  List<Reservation> findByUser(Usuario user);
+  List<Reserva> findByUsuario(Usuario usuario);
 
-  List<Reservation> findByEndTimeBefore(LocalDateTime now);
+  List<Reserva> findByHorarioFimBefore(LocalDateTime now);
 }

@@ -9,18 +9,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "resources")
-public class Resource {
+@Table(name = "recursos")
+public class Recurso {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "name", nullable = false, unique = true)
-  private String name; // Ex: "Vaga 1", "Vaga 2"
+  @Column(name = "nome", nullable = false, unique = true)
+  private String nome; // Ex: "Vaga 1", "Vaga 2"
 
   @Column(name = "status", nullable = false)
   private String status; // Status: "available", "occupied", "reserved"
 
-  @Column(name = "type")
-  private String type; // Ex: "Parking Spot"
+  @Column(name = "tipo")
+  private String tipo; // Ex: "Parking Spot"
 }
