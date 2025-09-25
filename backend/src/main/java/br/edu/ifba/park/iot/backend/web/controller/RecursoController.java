@@ -54,7 +54,7 @@ public class RecursoController {
     return ResponseEntity.ok(RecursoMapper.toDto(recurso));
   }
 
-  @Operation(summary = "Cria um novo recurso", description = "Cria uma nova vaga de estacionamento. Acesso restrito a usuários ADMIN.", security = @SecurityRequirement(name = "security"), responses = {
+  @Operation(summary = "Cria um novo recurso", description = "Cria uma nova vaga de estacionamento. Acesso restrito a usuários ADMIN.", responses = {
       @ApiResponse(responseCode = "201", description = "Recurso criado com sucesso.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RecursoResponseDto.class))),
       @ApiResponse(responseCode = "403", description = "Acesso negado. Usuário sem permissão.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
       @ApiResponse(responseCode = "422", description = "Dados de entrada inválidos.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class)))
@@ -62,12 +62,23 @@ public class RecursoController {
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<RecursoResponseDto> criarRecurso(@Valid @RequestBody RecursoRequestDto dto) {
-    Recurso recurso = RecursoMapper.toRecurso(dto);
+    Integer lastNumeroVaga = recursoRepository.findLastNumeroVaga();
+    int novoNumeroVaga = (lastNumeroVaga == null) ? 1 : lastNumeroVaga + 1;
+
+    Recurso recurso = new Recurso();
+    recurso.setNumeroVaga(novoNumeroVaga);
+    recurso.setTipo(dto.getTipo());
+    recurso.setStatus(dto.getStatus());
+
+    String nomeVaga = "Vaga " + novoNumeroVaga;
+    recurso.setNome(nomeVaga);
+
     Recurso novoRecurso = recursoRepository.save(recurso);
+
     return ResponseEntity.status(HttpStatus.CREATED).body(RecursoMapper.toDto(novoRecurso));
   }
 
-  @Operation(summary = "Atualiza um recurso", description = "Atualiza uma vaga de estacionamento. Acesso restrito a usuários ADMIN.", security = @SecurityRequirement(name = "security"), responses = {
+  @Operation(summary = "Atualiza um recurso", description = "Atualiza uma vaga de estacionamento. Acesso restrito a usuários ADMIN.", responses = {
       @ApiResponse(responseCode = "200", description = "Recurso atualizado com sucesso.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RecursoResponseDto.class))),
       @ApiResponse(responseCode = "404", description = "Recurso não encontrado.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
       @ApiResponse(responseCode = "403", description = "Acesso negado. Usuário sem permissão.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
@@ -79,15 +90,14 @@ public class RecursoController {
       @Valid @RequestBody RecursoRequestDto dto) {
     return recursoRepository.findById(id)
         .map(recurso -> {
-          recurso.setNome(dto.getNome());
-          recurso.setStatus(dto.getStatus());
           recurso.setTipo(dto.getTipo());
+          recurso.setStatus(dto.getStatus());
           return ResponseEntity.ok(RecursoMapper.toDto(recursoRepository.save(recurso)));
         })
         .orElse(ResponseEntity.notFound().build());
   }
 
-  @Operation(summary = "Deleta um recurso", description = "Deleta uma vaga de estacionamento. Acesso restrito a usuários ADMIN.", security = @SecurityRequirement(name = "security"), responses = {
+  @Operation(summary = "Deleta um recurso", description = "Deleta uma vaga de estacionamento. Acesso restrito a usuários ADMIN.", responses = {
       @ApiResponse(responseCode = "204", description = "Recurso deletado com sucesso."),
       @ApiResponse(responseCode = "404", description = "Recurso não encontrado.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
       @ApiResponse(responseCode = "403", description = "Acesso negado. Usuário sem permissão.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class)))

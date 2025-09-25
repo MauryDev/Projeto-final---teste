@@ -1,0 +1,109 @@
+/* Container principal e grid */
+.vagas-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.parking-lot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+/* Card da Vaga */
+.parking-spot {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  border: 1px solid #e9ecef;
+}
+
+.parking-spot:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.parking-spot.occupied {
+  background-color: #f8d7da; /* Fundo vermelho claro para ocupadas */
+  border-color: #f5c6cb;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.parking-spot.occupied:hover {
+  transform: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.parking-spot.available {
+  background-color: #d4edda; /* Fundo verde claro para disponíveis */
+  border-color: #c3e6cb;
+}
+
+/* Elementos dentro do card */
+.spot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.spot-number {
+  font-size: 1.5rem;
+  color: #343a40;
+  font-weight: 700;
+}
+
+.spot-status-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #343a40; /* Mantenha a cor do texto para visibilidade */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-available {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.status-occupied {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.spot-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  margin: 1rem 0;
+}
+
+.spot-emoji {
+  font-size: 3rem; /* Tamanho maior para o emoji */
+  margin-bottom: 0.5rem;
+}
+
+.spot-type {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+  .parking-lot-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+}

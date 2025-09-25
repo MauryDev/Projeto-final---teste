@@ -9,6 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RecursoResponseDto {
   private Long id;
+  private Integer numeroVaga;
   private String nome;
   private String status;
   private String tipo;

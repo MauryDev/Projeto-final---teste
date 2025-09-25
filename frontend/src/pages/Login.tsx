@@ -15,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await loginAPI(username, password);
-      login(res.accessToken, username); // Salva token e username
+      login(res.token, username); // Salva token e username
       navigate("/home");
     } catch {
       setError("Credenciais inválidas");

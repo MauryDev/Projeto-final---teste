@@ -30,6 +30,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/veiculos")
+@CrossOrigin(origins = "localhost:3000")
 public class VeiculoController {
 
   private final VeiculoRepository veiculoRepository;
