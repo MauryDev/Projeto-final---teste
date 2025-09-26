@@ -89,6 +89,7 @@ const VagasDeEstacionamento: React.FC = () => {
           <div
             key={vaga.id}
             className={`parking-spot ${vaga.status === 'available' ? 'available' : 'occupied'}`}
+            // O onClick está na div inteira, o que é um comportamento de botão
             onClick={() => handleVagaClick(vaga.id, vaga.status)}
           >
             <div className="spot-header">
@@ -104,6 +105,19 @@ const VagasDeEstacionamento: React.FC = () => {
               </span>
               <span className="spot-type">{getTipoLabel(vaga.tipo)}</span>
             </div>
+
+            {/* Botão visual se a vaga estiver disponível */}
+            {vaga.status === 'available' && (
+              <button
+                className="btn btn-primary mt-2"
+                onClick={(e) => {
+                  e.stopPropagation(); // Previne que o evento de clique na div pai seja acionado
+                  handleVagaClick(vaga.id, vaga.status);
+                }}
+              >
+                Reservar
+              </button>
+            )}
           </div>
         ))}
       </div>

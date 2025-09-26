@@ -16,4 +16,5 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
   List<Veiculo> findByUsuario(Usuario usuario);
 
   Optional<Veiculo> findByIdAndUsuario(Long id, Usuario usuario);
+  
 }

@@ -15,7 +15,7 @@
 .parking-spot {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 12px;
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
   font-weight: bold;
@@ -30,7 +30,7 @@
 }
 
 .parking-spot.occupied {
-  background-color: #f8d7da; /* Fundo vermelho claro para ocupadas */
+  background-color: #f8d7da;
   border-color: #f5c6cb;
   cursor: not-allowed;
   opacity: 0.8;
@@ -42,7 +42,7 @@
 }
 
 .parking-spot.available {
-  background-color: #d4edda; /* Fundo verde claro para disponíveis */
+  background-color: #d4edda;
   border-color: #c3e6cb;
 }
 
@@ -51,7 +51,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.spot-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  margin: 0.5rem 0;
 }
 
 .spot-number {
@@ -65,7 +74,7 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: bold;
-  color: #343a40; /* Mantenha a cor do texto para visibilidade */
+  color: #343a40;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -81,17 +90,8 @@
   color: #fff;
 }
 
-.spot-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
-  margin: 1rem 0;
-}
-
 .spot-emoji {
-  font-size: 3rem; /* Tamanho maior para o emoji */
+  font-size: 3rem;
   margin-bottom: 0.5rem;
 }
 

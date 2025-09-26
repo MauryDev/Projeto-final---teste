@@ -23,13 +23,17 @@ public class Reserva {
   @JoinColumn(name = "recurso_id", nullable = false)
   private Recurso recurso;
 
+  @Column(name = "horario_inicio", nullable = false)
+  private LocalDateTime horarioInicio;
+
+  @Column(name = "horario_fim", nullable = true)
+  private LocalDateTime horarioFim;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "usuario_id", nullable = false)
   private Usuario usuario;
 
-  @Column(name = "horario_inicio", nullable = false)
-  private LocalDateTime horarioInicio;
-
-  @Column(name = "horario_fim", nullable = false)
-  private LocalDateTime horarioFim;
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "veiculo_id", nullable = false)
+  private Veiculo veiculo;
 }

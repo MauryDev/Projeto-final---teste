@@ -23,5 +23,13 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
   // Encontra todas as reservas de um usuário
   List<Reserva> findByUsuario(Usuario usuario);
 
+  // Encontra todas as reservas que terminaram antes do horário atual
   List<Reserva> findByHorarioFimBefore(LocalDateTime now);
+
+  // Encontra todas as reservas ativas (sem horário de fim) de um usuário
+  List<Reserva> findByUsuarioAndHorarioFimIsNull(Usuario usuario);
+
+  // Verifica se um usuário possui uma reserva ativa (sem horário de fim) para um recurso específico
+  boolean existsByUsuarioAndRecursoAndHorarioFimIsNull(Usuario usuario, Recurso recurso);
+
 }
