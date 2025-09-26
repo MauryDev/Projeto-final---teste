@@ -1,83 +1,90 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/api';
-import { jwtDecode } from 'jwt-decode';
+import { useAuth } from '../hooks/useAuth';
+import CarCard from '../components/CarCard';
+import { ReservaResponseDto } from '../types/Reserva';
 
-interface ReservaResponseDto {
-  id: number;
-  nomeRecurso: string;
-  horarioInicio: string;
-  horarioFim: string | null;
-}
-
-interface JwtPayload {
-  id: number;
-  sub: string;
-  role: string;
-  exp: number;
-}
 
 const MinhasReservas: React.FC = () => {
+  const { token, loading: authLoading } = useAuth();
   const [reservas, setReservas] = useState<ReservaResponseDto[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchReservas = async () => {
-      const token = localStorage.getItem('token');
-      const decodedToken = token ? jwtDecode<JwtPayload>(token) : null;
-      const usuarioId = decodedToken?.id;
+    if (authLoading) {
+      return;
+    }
 
-      if (!usuarioId) {
+    const fetchReservas = async () => {
+      if (!token) {
         setError('Usuário não autenticado.');
-        setLoading(false);
         return;
       }
+
+      setLoading(true);
       try {
-        // Endpoint para buscar reservas ativas do usuário
-        const response = await api.get(`/reservas/ativas/${usuarioId}`);
+        const response = await api.get('/reservas/ativas');
+        // ✅ Certifique-se de que o backend está retornando usuarioId e nomeUsuario se quiser usá-los no front
         setReservas(response.data);
+        setError(null);
       } catch (err) {
         setError('Erro ao carregar suas reservas.');
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchReservas();
-  }, []); // A dependência agora é um array vazio, para que o efeito rode apenas uma vez
+  }, [token, authLoading]);
 
   const handleFinalizarReserva = async (reservaId: number) => {
     try {
       await api.put(`/reservas/finalizar/${reservaId}`);
-      alert('Reserva finalizada com sucesso!');
-      setReservas(reservas.filter(reserva => reserva.id !== reservaId));
+      // Remove a reserva finalizada da lista
+      setReservas(currentReservas =>
+        currentReservas.filter((reserva) => reserva.id !== reservaId)
+      );
+
+      // alert('Reserva finalizada com sucesso!');
     } catch (err: any) {
-      alert('Erro ao finalizar a reserva: ' + err.response?.data?.message);
+      alert('Erro ao finalizar a reserva: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  if (loading) return <div>Carregando...</div>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
+  if (authLoading || loading) {
+    return <div className="text-center mt-5"><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div></div>;
+  }
+
+  if (error) {
+    return <div className="alert alert-danger text-center mt-5">{error}</div>;
+  }
 
   return (
-    <div className="container mt-4">
-      <h2>Minhas Reservas Ativas</h2>
+    <div className="container reservas-container">
+      <h2 className="text-center text-dark">
+        <i className="bi bi-car-block-fill me-2"></i> Minhas Vagas Ativas
+      </h2>
+      <p className="text-center text-muted mb-4">
+        Visualize e gerencie suas reservas de estacionamento em tempo real.
+      </p>
+
       {reservas.length === 0 ? (
-        <p>Nenhuma reserva ativa no momento.</p>
+        <div className="empty-state bg-light rounded-2 p-3 shadow-sm">
+          <i className="bi bi-car-fill"></i>
+          <p className="lead fw-normal">Nenhuma reserva ativa encontrada.</p>
+          <p className="text-muted">Parece que você ainda não estacionou. Que tal encontrar uma vaga agora?</p>
+        </div>
       ) : (
-        <ul className="list-group">
-          {reservas.map(reserva => (
-            <li key={reserva.id} className="list-group-item d-flex justify-content-between align-items-center">
-              <span>Vaga {reserva.nomeRecurso} - Início: {new Date(reserva.horarioInicio).toLocaleString()}</span>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => handleFinalizarReserva(reserva.id)}
-                disabled={!!reserva.horarioFim}
-              >
-                Finalizar Estadia
-              </button>
-            </li>
+        <div className="row justify-content-center  gx-4 gy-4">
+          {reservas.map((reserva) => (
+            <div key={reserva.id} className="col-xxl-3 col-lg-4 col-md-6">
+              {/* ✅ Renderiza o componente CarCard */}
+              <CarCard reserva={reserva} onFinalizarReserva={handleFinalizarReserva} />
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

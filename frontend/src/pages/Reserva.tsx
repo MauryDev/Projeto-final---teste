@@ -11,7 +11,7 @@ type VeiculoFormValues = {
   modelo: string;
 };
 
-// Interfaces do seu backend
+// Interfaces do backend
 interface Vaga {
   id: number;
   numeroVaga: number;
@@ -87,8 +87,6 @@ const Reserva: React.FC = () => {
     };
 
     try {
-      // O backend deve ter um endpoint que recebe todos os dados
-      // e coordena a criação do veículo e da reserva.
       await api.post('/reservas', reservaData);
       alert('Reserva e cadastro do veículo efetuados com sucesso!');
       navigate('/vagas');

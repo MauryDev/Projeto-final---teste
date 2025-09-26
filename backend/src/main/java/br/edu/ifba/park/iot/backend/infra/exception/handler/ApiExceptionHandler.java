@@ -16,6 +16,7 @@ import br.edu.ifba.park.iot.backend.infra.exception.error.ErrorMessage;
 import br.edu.ifba.park.iot.backend.infra.exception.notfound.EntityNotFoundException;
 import br.edu.ifba.park.iot.backend.infra.exception.password.PasswordInvalidException;
 import br.edu.ifba.park.iot.backend.infra.exception.phone.PhoneUniqueViolationException;
+import br.edu.ifba.park.iot.backend.infra.exception.reserva.ReservaConflictException;
 import br.edu.ifba.park.iot.backend.infra.exception.username.UsernameUniqueViolationException;
 
 @Slf4j
@@ -72,4 +73,15 @@ public class ApiExceptionHandler {
         .body(new ErrorMessage(request, HttpStatus.UNPROCESSABLE_ENTITY, "Campo(s) invalido(s)", result));
 
   }
+
+  @ExceptionHandler(ReservaConflictException.class)
+  public ResponseEntity<ErrorMessage> reservaConflictException(ReservaConflictException ex,
+      HttpServletRequest request) {
+    log.error("Api Error - ", ex);
+    return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(new ErrorMessage(request, HttpStatus.CONFLICT, ex.getMessage()));
+  }
+
 }

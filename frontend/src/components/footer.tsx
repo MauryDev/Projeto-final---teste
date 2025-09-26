@@ -3,7 +3,7 @@ export default function Footer() {
     <footer
       style={{
         marginTop: "0px",
-        padding: "5px",
+        padding: "3px",
         backgroundColor: "#222",
         color: "#fff",
         textAlign: "center",

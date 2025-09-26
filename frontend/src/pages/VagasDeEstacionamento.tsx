@@ -20,7 +20,11 @@ const VagasDeEstacionamento: React.FC = () => {
     const fetchVagas = async () => {
       try {
         const response = await api.get('/recursos');
-        setVagas(response.data);
+
+        // Cria uma cópia do array e ordene-o pelo numeroVaga
+        const sortedVagas = [...response.data].sort((a, b) => a.numeroVaga - b.numeroVaga);
+
+        setVagas(sortedVagas);
       } catch (err) {
         setError('Erro ao carregar as vagas. Por favor, tente novamente.');
         console.error("Erro na requisição da API:", err);
@@ -89,7 +93,6 @@ const VagasDeEstacionamento: React.FC = () => {
           <div
             key={vaga.id}
             className={`parking-spot ${vaga.status === 'available' ? 'available' : 'occupied'}`}
-            // O onClick está na div inteira, o que é um comportamento de botão
             onClick={() => handleVagaClick(vaga.id, vaga.status)}
           >
             <div className="spot-header">
@@ -106,12 +109,11 @@ const VagasDeEstacionamento: React.FC = () => {
               <span className="spot-type">{getTipoLabel(vaga.tipo)}</span>
             </div>
 
-            {/* Botão visual se a vaga estiver disponível */}
             {vaga.status === 'available' && (
               <button
                 className="btn btn-primary mt-2"
                 onClick={(e) => {
-                  e.stopPropagation(); // Previne que o evento de clique na div pai seja acionado
+                  e.stopPropagation();
                   handleVagaClick(vaga.id, vaga.status);
                 }}
               >

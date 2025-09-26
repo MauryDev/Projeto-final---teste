@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import br.edu.ifba.park.iot.backend.security.model.Usuario;
 
 @Getter
@@ -24,9 +26,11 @@ public class Reserva {
   private Recurso recurso;
 
   @Column(name = "horario_inicio", nullable = false)
+  @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
   private LocalDateTime horarioInicio;
 
   @Column(name = "horario_fim", nullable = true)
+  @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
   private LocalDateTime horarioFim;
 
   @ManyToOne(fetch = FetchType.LAZY)

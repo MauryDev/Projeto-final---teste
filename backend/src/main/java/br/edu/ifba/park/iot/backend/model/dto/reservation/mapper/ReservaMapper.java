@@ -2,7 +2,6 @@ package br.edu.ifba.park.iot.backend.model.dto.reservation.mapper;
 
 import br.edu.ifba.park.iot.backend.model.Reserva;
 import br.edu.ifba.park.iot.backend.model.dto.reservation.response.ReservaResponseDto;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,8 +12,12 @@ public class ReservaMapper {
     dto.setId(reserva.getId());
     dto.setRecursoId(reserva.getRecurso().getId());
     dto.setNomeRecurso(reserva.getRecurso().getNome());
+    dto.setTipoVaga(reserva.getRecurso().getTipo().name());
     dto.setUsuarioId(reserva.getUsuario().getId());
     dto.setNomeUsuario(reserva.getUsuario().getUsername());
+    dto.setPlacaVeiculo(reserva.getVeiculo().getPlaca());
+    dto.setMarcaVeiculo(reserva.getVeiculo().getMarca());
+    dto.setModeloVeiculo(reserva.getVeiculo().getModelo());
     dto.setHorarioInicio(reserva.getHorarioInicio());
     dto.setHorarioFim(reserva.getHorarioFim());
     return dto;
