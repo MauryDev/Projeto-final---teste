@@ -188,7 +188,7 @@ const Reserva: React.FC = () => {
           <div className="alert alert-warning mb-4" role="alert">
             Você não possui veículos cadastrados. Por favor, cadastre um veículo primeiro.
             <button
-              onClick={() => navigate('/cadastro-veiculo')}
+              onClick={() => navigate('/gerenciar-veiculos')}
               className="btn btn-sm btn-warning mt-2 d-block w-100"
             >
               Ir para Cadastro de Veículos

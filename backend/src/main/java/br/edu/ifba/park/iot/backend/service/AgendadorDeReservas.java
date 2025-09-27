@@ -21,26 +21,31 @@ public class AgendadorDeReservas {
   private final ReservaRepository reservaRepository;
   private final RecursoRepository recursoRepository;
 
+  // Tolerância de 15 minutos (900 segundos)
+  private static final int TOLERANCIA_MINUTOS = 15;
+
   @Transactional
   @Scheduled(fixedRate = 60000) // Roda a cada 60 segundos
   public void liberarReservasExpiradas() {
     log.info("Iniciando a verificação de reservas expiradas...");
 
-    // Encontra todas as reservas cujo 'horarioFim' já passou
-    List<Reserva> reservasExpiradas = reservaRepository.findByHorarioFimBefore(LocalDateTime.now());
+    LocalDateTime limite = LocalDateTime.now().minusMinutes(TOLERANCIA_MINUTOS);
+
+    // Encontra todas as reservas cujo 'horarioFim' já passou a tolerância de 15
+    // minutos
+    List<Reserva> reservasExpiradas = reservaRepository.findByHorarioFimBefore(limite);
 
     if (reservasExpiradas.isEmpty()) {
       log.info("Nenhuma reserva expirada encontrada. O agendador está ocioso.");
       return;
     }
 
-    log.info("Foram encontradas {} reservas expiradas. Iniciando a liberação.", reservasExpiradas.size());
+    log.info("Foram encontradas {} reservas expiradas (com tolerância de {} min). Iniciando a liberação.",
+        reservasExpiradas.size(), TOLERANCIA_MINUTOS);
 
-    // Itera sobre as reservas expiradas
     for (Reserva reserva : reservasExpiradas) {
       Recurso recurso = reserva.getRecurso();
       if (recurso != null) {
-        // Atualiza o status do recurso para "available"
         recurso.setStatus("available");
         recursoRepository.save(recurso);
         log.info("Recurso com ID {} (Vaga: {}) liberado devido a expiração.", recurso.getId(), recurso.getNome());

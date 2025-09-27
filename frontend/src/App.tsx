@@ -7,7 +7,6 @@ import Cadastro from "./pages/Cadastro";
 import Footer from "./components/footer";
 import VagasDeEstacionamento from "./pages/VagasDeEstacionamento";
 import PrivateRoute from "./components/PrivateRoute";
-import CadastroVeiculo from "./pages/CadastroVeiculo";
 import Reserva from "./pages/Reserva";
 import MinhasReservas from "./pages/MinhasReservas";
 import GerenciarVeiculos from "./pages/GerenciarVeiculos";
@@ -23,7 +22,6 @@ export default function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
-          <Route path="/cadastrar-veiculo" element={<CadastroVeiculo />} />
           <Route path="/reservar/:id" element={<Reserva />} />
           <Route
             path="/vagas"
