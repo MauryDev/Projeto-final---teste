@@ -11,7 +11,6 @@ const initialFormState: VeiculoRequestDto = {
   modelo: '',
 };
 
-
 const GerenciarVeiculos: React.FC = () => {
   // hook de autenticação
   const { token, loading: authLoading } = useAuth();
@@ -441,11 +440,6 @@ const GerenciarVeiculos: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Footer Style Element */}
-        <footer className="mt-5 text-center text-secondary-emphasis">
-          <small>Smart Park IoT Management System</small>
-        </footer>
       </div>
 
       {/* Modal de Confirmação de Exclusão */}
