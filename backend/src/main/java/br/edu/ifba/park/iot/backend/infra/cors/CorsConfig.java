@@ -16,7 +16,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 // deploy
                 .allowedOrigins("http://localhost:3000")
                 // Permite os métodos HTTP que a sua API usa
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 // Permite o envio de headers na requisição
                 .allowedHeaders("*")
                 // Permite o envio de credenciais (cookies, tokens de autenticação)

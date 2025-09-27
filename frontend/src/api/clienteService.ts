@@ -27,4 +27,10 @@ export const ClienteService = {
     const res = await api.put(`/clientes/${cliente.id}`, cliente);
     return res.data;
   },
+
+  // Muda a senha do usuário associado ao cliente
+  changeUserPassword: async (usuarioId: number, passwords: { senhaAtual: string; novaSenha: string; confirmaSenha: string }) => {
+    const res = await api.patch(`/usuarios/${usuarioId}`, passwords);
+    return res.data;
+  }
 };

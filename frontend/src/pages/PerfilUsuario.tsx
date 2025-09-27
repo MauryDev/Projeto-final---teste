@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { ClienteService, ClienteForm } from "../api/clienteService";
 import Swal from "sweetalert2"; // Importa o SweetAlert2
+import { ChangePasswordModal } from "../components/ChangePasswordModal"; // Importa o modal
 
 // Componente para exibir e editar campos de informação
 const InfoField = ({ label, name, value, onChange, isEditing, type = "text" }: {
@@ -34,6 +35,7 @@ export default function PerfilUsuario() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false); // Novo estado para o modal
 
   useEffect(() => {
     if (!userId) {
@@ -84,7 +86,6 @@ export default function PerfilUsuario() {
 
       setUsername(updated.email);
 
-      // SweetAlert2 para sucesso
       Swal.fire({
         icon: 'success',
         title: 'Sucesso!',
@@ -95,7 +96,6 @@ export default function PerfilUsuario() {
 
     } catch (err) {
       console.error(err);
-      // SweetAlert2 para erro
       Swal.fire({
         icon: 'error',
         title: 'Erro!',
@@ -106,13 +106,7 @@ export default function PerfilUsuario() {
   };
 
   const handleChangePassword = () => {
-    // SweetAlert2 para alerta
-    Swal.fire({
-      icon: 'info',
-      title: 'Atenção',
-      text: "A função 'Alterar Senha' ainda não está disponível.",
-      showConfirmButton: true
-    });
+    setShowPasswordModal(true);
   };
 
   if (loading || authLoading) {
@@ -129,82 +123,89 @@ export default function PerfilUsuario() {
   if (!cliente || !formData) return <p className="text-center mt-5">Cliente não encontrado</p>;
 
   return (
-    <div className="container mt-5">
-      <div
-        className="card shadow-lg border-0 rounded-4"
-        style={{ maxWidth: "700px", margin: "0 auto" }}
-      >
-        <div className="card-header bg-primary text-dark d-flex justify-content-between align-items-center rounded-top-4 p-4">
-          <h4 className="mb-0 fw-bold">Meu Perfil</h4>
-          <span className={`badge rounded-pill ${isEditing ? "bg-warning" : "bg-light"} text-dark`}>
-            {isEditing ? "Modo Edição" : "Visualização"}
-          </span>
-        </div>
-        <div className="card-body p-4">
-          <div className="row g-4">
-            <InfoField
-              label="Nome"
-              name="nome"
-              value={formData.nome || ""}
-              onChange={handleChange}
-              isEditing={isEditing}
-            />
-            <InfoField
-              label="CPF"
-              name="cpf"
-              value={formData.cpf || ""}
-              onChange={handleChange}
-              isEditing={isEditing}
-            />
-            <InfoField
-              label="Telefone"
-              name="telefone"
-              value={formData.telefone || ""}
-              onChange={handleChange}
-              isEditing={isEditing}
-            />
-            <InfoField
-              label="E-mail"
-              name="email"
-              value={formData.email || ""}
-              onChange={handleChange}
-              isEditing={isEditing}
-              type="email"
-            />
+    <>
+      <div className="container mt-5">
+        <div
+          className="card shadow-lg border-0 rounded-4"
+          style={{ maxWidth: "700px", margin: "0 auto" }}
+        >
+          <div className="card-header bg-primary text-dark d-flex justify-content-between align-items-center rounded-top-4 p-4">
+            <h4 className="mb-0 fw-bold">Meu Perfil</h4>
+            <span className={`badge rounded-pill ${isEditing ? "bg-warning" : "bg-light"} text-dark`}>
+              {isEditing ? "Modo Edição" : "Visualização"}
+            </span>
           </div>
+          <div className="card-body p-4">
+            <div className="row g-4">
+              <InfoField
+                label="Nome"
+                name="nome"
+                value={formData.nome || ""}
+                onChange={handleChange}
+                isEditing={isEditing}
+              />
+              <InfoField
+                label="CPF"
+                name="cpf"
+                value={formData.cpf || ""}
+                onChange={handleChange}
+                isEditing={isEditing}
+              />
+              <InfoField
+                label="Telefone"
+                name="telefone"
+                value={formData.telefone || ""}
+                onChange={handleChange}
+                isEditing={isEditing}
+              />
+              <InfoField
+                label="E-mail"
+                name="email"
+                value={formData.email || ""}
+                onChange={handleChange}
+                isEditing={isEditing}
+                type="email"
+              />
+            </div>
 
-          <div className="d-flex justify-content-between flex-wrap mt-4">
-            {!isEditing ? (
+            <div className="d-flex justify-content-between flex-wrap mt-4">
+              {!isEditing ? (
+                <button
+                  className="btn btn-outline-primary shadow-sm me-2 mb-2"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <i className="bi bi-pencil-square me-2"></i> Editar Perfil
+                </button>
+              ) : (
+                <button
+                  className="btn btn-success shadow-sm me-2 mb-2"
+                  onClick={handleSave}
+                >
+                  <i className="bi bi-check-circle me-2"></i> Salvar Alterações
+                </button>
+              )}
               <button
-                className="btn btn-outline-primary shadow-sm me-2 mb-2"
-                onClick={() => setIsEditing(true)}
+                className="btn btn-outline-secondary shadow-sm mb-2"
+                onClick={handleChangePassword}
               >
-                <i className="bi bi-pencil-square me-2"></i> Editar Perfil
+                <i className="bi bi-lock me-2"></i> Alterar Senha
               </button>
-            ) : (
-              <button
-                className="btn btn-success shadow-sm me-2 mb-2"
-                onClick={handleSave}
-              >
-                <i className="bi bi-check-circle me-2"></i> Salvar Alterações
-              </button>
+            </div>
+
+            {isEditing && (
+              <p className="mt-3 text-center text-muted fst-italic">
+                <i className="bi bi-info-circle me-2"></i>
+                Preencha os campos e clique em "Salvar Alterações" para atualizar seu perfil.
+              </p>
             )}
-            <button
-              className="btn btn-outline-secondary shadow-sm mb-2"
-              onClick={handleChangePassword}
-            >
-              <i className="bi bi-lock me-2"></i> Alterar Senha
-            </button>
           </div>
-
-          {isEditing && (
-            <p className="mt-3 text-center text-muted fst-italic">
-              <i className="bi bi-info-circle me-2"></i>
-              Preencha os campos e clique em "Salvar Alterações" para atualizar seu perfil.
-            </p>
-          )}
         </div>
       </div>
-    </div>
+
+      <ChangePasswordModal
+        show={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
+    </>
   );
 }
