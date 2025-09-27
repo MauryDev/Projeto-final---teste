@@ -108,7 +108,14 @@ export default function Navbar() {
                 </button>
                 <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
 
-                  {/* OPÇÃO 1: Sair (Logout) */}
+                  {/* OPÇÃO 1: Perfil */}
+                  <li>
+                    <Link className="dropdown-item" to="/perfil">
+                      <i className="bi bi-person-lines-fill me-2"></i> Perfil
+                    </Link>
+                  </li>
+
+                  {/* OPÇÃO 2: Sair (Logout) */}
                   <li>
                     <button
                       className="dropdown-item text-danger"

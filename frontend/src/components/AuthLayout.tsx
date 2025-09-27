@@ -5,6 +5,7 @@ type AuthLayoutProps = {
   subtitle: string;
   iconColor?: string;
   children: React.ReactNode;
+  subtitleStyle?: React.CSSProperties
 };
 
 export default function AuthLayout({
@@ -12,6 +13,7 @@ export default function AuthLayout({
   subtitle,
   iconColor = "#ffc107",
   children,
+  subtitleStyle,
 }: AuthLayoutProps) {
   return (
     <div
@@ -33,7 +35,9 @@ export default function AuthLayout({
           <h3 className="mt-2" style={{ color: "#2a5298", fontWeight: "bold" }}>
             {title}
           </h3>
-          <p className="text-muted">{subtitle}</p>
+          <p className="text-muted" style={subtitleStyle}>
+            {subtitle}
+          </p>
         </div>
 
         {children}
