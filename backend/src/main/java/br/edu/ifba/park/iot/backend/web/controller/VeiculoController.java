@@ -103,7 +103,6 @@ public class VeiculoController {
       // Verifica se a placa foi alterada e se a nova placa já existe
       if (!veiculo.getPlaca().equals(dto.getPlaca())) {
         if (veiculoRepository.findByPlaca(dto.getPlaca()).isPresent()) {
-          // Retorna CONFLICT se a nova placa já estiver em uso
           return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
       }
@@ -115,7 +114,6 @@ public class VeiculoController {
       Veiculo veiculoAtualizado = veiculoRepository.save(veiculo);
       return ResponseEntity.ok(VeiculoMapper.toDto(veiculoAtualizado));
     } else {
-      // Retorna NOT_FOUND se o veículo não for encontrado ou não pertencer ao usuário
       return ResponseEntity.notFound().build();
     }
   }

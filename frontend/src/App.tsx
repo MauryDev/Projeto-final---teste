@@ -10,6 +10,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import CadastroVeiculo from "./pages/CadastroVeiculo";
 import Reserva from "./pages/Reserva";
 import MinhasReservas from "./pages/MinhasReservas";
+import GerenciarVeiculos from "./pages/GerenciarVeiculos";
 
 export default function App() {
   return (
@@ -36,6 +37,14 @@ export default function App() {
             element={
               <PrivateRoute>
                 <MinhasReservas />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/gerenciar-veiculos"
+            element={
+              <PrivateRoute>
+                <GerenciarVeiculos />
               </PrivateRoute>
             }
           />
