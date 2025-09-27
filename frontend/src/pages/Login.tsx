@@ -15,39 +15,28 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      Swal.fire({
-        icon: "warning",
-        title: "Atenção",
-        text: "Preencha todos os campos",
-      });
+      Swal.fire({ icon: "warning", title: "Atenção", text: "Preencha todos os campos" });
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await loginAPI(username, password); // retorna { token, sub }
-
-      // Usa diretamente 'username' ou 'sub' retornado pelo backend
-      login(null, res.token, res.sub || username);
+      const res = await loginAPI(username, password); // retorna { token }
+      login(res.token); // decodificado no AuthContext
 
       Swal.fire({
         icon: "success",
         title: "Login efetuado",
-        text: `Bem-vindo, ${res.sub || username}!`,
+        text: `Bem-vindo, ${username}!`,
         timer: 1500,
         showConfirmButton: false,
       });
 
       navigate("/home");
     } catch (err: any) {
-      const message =
-        err.response?.data?.message || "Erro ao conectar com o servidor, tente novamente";
-      Swal.fire({
-        icon: "error",
-        title: "Falha no login",
-        text: message,
-      });
+      const message = err.response?.data?.message || "Erro ao conectar com o servidor, tente novamente";
+      Swal.fire({ icon: "error", title: "Falha no login", text: message });
     } finally {
       setLoading(false);
     }
@@ -57,9 +46,7 @@ export default function Login() {
     <AuthLayout title="Estacionamento Inteligente" subtitle="Acesse sua conta">
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="username" className="form-label">
-            Usuário
-          </label>
+          <label htmlFor="username" className="form-label">Usuário</label>
           <input
             id="username"
             className="form-control"
@@ -72,9 +59,7 @@ export default function Login() {
         </div>
 
         <div className="mb-3">
-          <label htmlFor="password" className="form-label">
-            Senha
-          </label>
+          <label htmlFor="password" className="form-label">Senha</label>
           <input
             id="password"
             className="form-control"

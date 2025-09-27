@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,6 +59,35 @@ public class ClienteController {
     cliente.setUsuario(usuarioService.buscarPorId(userDetails.getId()));
     clienteService.salvar(cliente);
     return ResponseEntity.status(201).body(ClienteMapper.toDto(cliente));
+  }
+
+  @Operation(summary = "Atualizar dados do cliente", description = "Recurso para atualizar nome, CPF, telefone do cliente e email do usuário. Requisição exige bearer token.", security = @SecurityRequirement(name = "security"), responses = {
+      @ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ClienteResponseDto.class))),
+      @ApiResponse(responseCode = "404", description = "Cliente não encontrado", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ErrorMessage.class))),
+      @ApiResponse(responseCode = "409", description = "Telefone já existe no sistema", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ErrorMessage.class))),
+      @ApiResponse(responseCode = "403", description = "Recurso não permitido", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ErrorMessage.class)))
+  })
+  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
+  public ResponseEntity<ClienteResponseDto> update(
+      @PathVariable Long id,
+      @RequestBody @Valid ClienteRequestDto dto,
+      @AuthenticationPrincipal JwtUserDetails userDetails) {
+
+    Cliente clienteAtualizado = clienteService.updateCliente(id, dto);
+    return ResponseEntity.ok(ClienteMapper.toDto(clienteAtualizado));
+  }
+
+  @Operation(summary = "Localizar cliente pelo usuário", description = "Recurso para localizar um cliente pelo ID do usuário. Requisição exige uso de bearer token.", security = @SecurityRequirement(name = "security"), responses = {
+      @ApiResponse(responseCode = "200", description = "Cliente localizado com sucesso", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ClienteResponseDto.class))),
+      @ApiResponse(responseCode = "404", description = "Cliente não encontrado", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ErrorMessage.class))),
+      @ApiResponse(responseCode = "403", description = "Recurso não permitido", content = @Content(mediaType = "application/json;charset=UTF-8", schema = @Schema(implementation = ErrorMessage.class)))
+  })
+  @GetMapping("/usuario/{usuarioId}")
+  @PreAuthorize("hasRole('CLIENTE') or hasRole('ADMIN')")
+  public ResponseEntity<ClienteResponseDto> getByUsuarioId(@PathVariable Long usuarioId) {
+    Cliente cliente = clienteService.buscarPorUsuarioId(usuarioId);
+    return ResponseEntity.ok(ClienteMapper.toDto(cliente));
   }
 
   @Operation(summary = "Localizar um cliente", description = "Recurso para localizar um cliente pelo ID. " +

@@ -11,11 +11,19 @@ import br.edu.ifba.park.iot.backend.model.dto.cliente.response.ClienteResponseDt
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClienteMapper {
 
+  private static final ModelMapper modelMapper = new ModelMapper();
+
+  static {
+    modelMapper.typeMap(Cliente.class, ClienteResponseDto.class)
+        .addMapping(src -> src.getUsuario().getUsername(), ClienteResponseDto::setEmail);
+  }
+
   public static Cliente toCliente(ClienteRequestDto dto) {
-    return new ModelMapper().map(dto, Cliente.class);
+    return modelMapper.map(dto, Cliente.class);
   }
 
   public static ClienteResponseDto toDto(Cliente cliente) {
-    return new ModelMapper().map(cliente, ClienteResponseDto.class);
+    return modelMapper.map(cliente, ClienteResponseDto.class);
   }
+
 }

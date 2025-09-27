@@ -39,7 +39,7 @@ public class Cliente implements Serializable {
   @Column(name = "telefone", nullable = false, unique = true, length = 15)
   private String telefone;
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "usuario_id", nullable = false)
   private Usuario usuario;
 

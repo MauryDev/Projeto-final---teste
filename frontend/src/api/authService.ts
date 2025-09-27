@@ -1,7 +1,10 @@
 import api from './api';
 
-export async function login(username: string, password: string) {
-  // A requisição de login não precisa do token, então a instância 'api' funciona perfeitamente
+export interface LoginResponse {
+  token: string;
+}
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
   const res = await api.post("/auth", { username, password });
-  return res.data;
+  return res.data; // { token: "eyJ..." }
 }

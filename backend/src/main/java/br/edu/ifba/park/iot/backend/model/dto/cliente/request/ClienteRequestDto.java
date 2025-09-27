@@ -1,5 +1,6 @@
 package br.edu.ifba.park.iot.backend.model.dto.cliente.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import org.hibernate.validator.constraints.br.CPF;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClienteRequestDto {
-  
+
   @NotBlank
   @Size(min = 5, max = 100)
   private String nome;
@@ -25,4 +26,8 @@ public class ClienteRequestDto {
   @NotBlank
   @Size(min = 11, max = 15)
   private String telefone;
+
+  @NotBlank
+  @Email
+  private String email;
 }
