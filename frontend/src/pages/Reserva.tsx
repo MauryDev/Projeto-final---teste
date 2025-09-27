@@ -1,15 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { jwtDecode } from 'jwt-decode';
-import api from '../api/api';
-
-// Interface para os dados do formulário de veículo
-type VeiculoFormValues = {
-  placa: string;
-  marca: string;
-  modelo: string;
-};
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import api from "../api/api";
+import { Veiculo } from "../types/Veiculo";
 
 // Interfaces do backend
 interface Vaga {
@@ -18,155 +10,237 @@ interface Vaga {
   tipo: string;
 }
 
-interface JwtPayload {
-  id: number;
-  sub: string;
-  role: string;
-  exp: number;
-}
-
 const Reserva: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm<VeiculoFormValues>();
 
   const [vaga, setVaga] = useState<Vaga | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+  const [veiculoSelecionadoId, setVeiculoSelecionadoId] = useState<number | null>(null);
 
-  // Efeito para carregar os detalhes da vaga
-  useEffect(() => {
-    const fetchVaga = async () => {
-      try {
-        const response = await api.get(`/recursos/${id}`);
-        setVaga(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Erro ao carregar os detalhes da vaga.');
-        setLoading(false);
-      }
-    };
-    fetchVaga();
-  }, [id]);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Função para formatar o tipo da vaga
   const formatTipoVaga = (tipo: string): string => {
+    if (!tipo) return 'Desconhecido';
     return tipo
       .toLowerCase()
       .replace(/_/g, ' ')
       .replace(/\b\w/g, c => c.toUpperCase());
   };
 
-  const onSubmit = async (data: VeiculoFormValues) => {
-    setError(null);
+  // Efeito para buscar vaga e veículos do usuário
+  useEffect(() => {
+    const fetchData = async () => {
+      setError(null);
+      setLoading(true);
 
-    // Obtém o ID do usuário do token JWT
-    const token = localStorage.getItem('token');
-    let usuarioId: number | null = null;
-    if (token) {
-      try {
-        const decodedToken = jwtDecode<JwtPayload>(token);
-        usuarioId = decodedToken.id;
-      } catch (err) {
-        setError('Token de autenticação inválido.');
-        console.error(err);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Usuário não autenticado. Faça login para continuar.");
+        setLoading(false);
         return;
       }
-    } else {
-      setError('Usuário não autenticado.');
+
+      try {
+        // 1. Busca detalhes da vaga
+        const vagaResponse = await api.get(`/recursos/${id}`);
+        setVaga(vagaResponse.data);
+
+        // 2. Busca veículos do usuário
+        const veiculosResponse = await api.get(`/veiculos`);
+        setVeiculos(veiculosResponse.data);
+
+        // Se houver veículos, pré-seleciona o primeiro
+        if (veiculosResponse.data.length > 0) {
+          setVeiculoSelecionadoId(veiculosResponse.data[0].id);
+        }
+
+      } catch (err: any) {
+        // Trata erros de carregamento, incluindo 401 se a API falhar aqui
+        const errMsg = err.response?.data?.message || 'Erro de rede ou permissão negada.';
+        setError(`Erro ao carregar dados: ${errMsg}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  // Submeter reserva
+  const handleReserva = async () => {
+    setError(null);
+    setSuccessMessage(null);
+
+    if (!veiculoSelecionadoId) {
+      setError("Selecione um veículo para reservar a vaga.");
       return;
     }
 
-    // Objeto de dados completo para a reserva
+    const veiculo = veiculos.find(v => v.id === veiculoSelecionadoId);
+    if (!veiculo) {
+      setError("Veículo selecionado não encontrado na sua lista.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Estrutura do JSON esperada pelo backend: Placa, Marca, Modelo
     const reservaData = {
       recursoId: id,
-      placaVeiculo: data.placa,
-      marcaVeiculo: data.marca,
-      modeloVeiculo: data.modelo,
-      usuarioId: usuarioId,
+      placaVeiculo: veiculo.placa,
+      marcaVeiculo: veiculo.marca,
+      modeloVeiculo: veiculo.modelo,
     };
 
     try {
-      await api.post('/reservas', reservaData);
-      alert('Reserva e cadastro do veículo efetuados com sucesso!');
-      navigate('/vagas');
+      await api.post("/reservas", reservaData);
+      setSuccessMessage('🎉 Reserva efetuada com sucesso! Redirecionando...');
+
+      // Redireciona após 3 segundos
+      setTimeout(() => {
+        setSuccessMessage(null);
+        navigate('/vagas');
+      }, 3000);
+
     } catch (err: any) {
-      setError('Erro ao efetuar a reserva: ' + (err.response?.data?.message || 'Erro de rede.'));
+      const errorMessage = err.response?.data?.message || 'Erro de rede. Verifique o console.';
+
+      // Tratamento de conflito 409
+      if (err.response?.status === 409) {
+        setError(`Conflito: ${errorMessage}`);
+      }
+      // Tratamento de erro 401 (Se o token falhar na hora do POST)
+      else if (err.response?.status === 401) {
+        setError('Sessão expirada. Por favor, faça login novamente.');
+      }
+      else {
+        setError('Erro ao efetuar a reserva: ' + errorMessage);
+      }
+
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   if (loading) {
-    return <div className="text-center mt-5">Carregando...</div>;
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Carregando...</span>
+          </div>
+          <p className="mt-3 text-secondary">Carregando dados...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div className="alert alert-danger">{error}</div>;
-  }
-
-  if (!vaga) {
-    return <div className="text-center mt-5">Vaga não encontrada.</div>;
+  if (error && !vaga) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light p-4">
+        <div className="alert alert-danger p-4 rounded-3 shadow-lg border-start border-5 border-danger w-100" style={{ maxWidth: '500px' }} role="alert">
+          <p className="fw-bold">Falha Crítica:</p>
+          <p>{error}</p>
+          <button
+            onClick={() => navigate('/vagas')}
+            className="btn btn-danger mt-3 w-100"
+          >
+            Voltar para Vagas
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4 mx-auto" style={{ maxWidth: '500px' }}>
-        <h2 className="text-center mb-4">Reservar Vaga {vaga.numeroVaga}</h2>
-        <p className="text-center">Tipo da Vaga: <strong>{formatTipoVaga(vaga.tipo)}</strong></p>
+    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light p-4">
+      <div className="card shadow-lg p-4 p-md-5 w-100" style={{ maxWidth: '500px' }}>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        <h2 className="text-center mb-2 fw-bold fs-3 text-primary">
+          Confirmar Reserva
+        </h2>
+        <p className="text-center text-secondary mb-4">
+          Vaga: <strong className="text-dark me-2">{vaga?.numeroVaga}</strong> | Tipo:
+          <strong className="text-primary">
+            {vaga ? formatTipoVaga(vaga.tipo) : 'Desconhecido'}
+          </strong>
+        </p>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Campo Placa */}
-          <div className="mb-3">
-            <label htmlFor="placa" className="form-label">Placa do Veículo</label>
-            <input
-              type="text"
-              className="form-control"
-              id="placa"
-              {...register("placa", {
-                required: "A placa é obrigatória",
-                minLength: {
-                  value: 7,
-                  message: "A placa deve ter 7 caracteres"
-                },
-                maxLength: {
-                  value: 7,
-                  message: "A placa deve ter 7 caracteres"
-                }
-              })}
-              onChange={(e) => e.target.value = e.target.value.toUpperCase()}
-            />
-            {errors.placa && <p className="text-danger">{errors.placa.message}</p>}
+        {/* Mensagens de feedback */}
+        {successMessage && (
+          <div className="alert alert-success p-3 mb-4 rounded-3 shadow-sm" role="alert">
+            <i className="bi bi-check-circle-fill me-2"></i> {successMessage}
           </div>
+        )}
 
-          {/* Campo Marca */}
-          <div className="mb-3">
-            <label htmlFor="marca" className="form-label">Marca</label>
-            <input
-              type="text"
-              className="form-control"
-              id="marca"
-              {...register("marca", { required: "A marca é obrigatória" })}
-            />
-            {errors.marca && <p className="text-danger">{errors.marca.message}</p>}
+        {error && (
+          <div className="alert alert-danger p-3 mb-4 rounded-3 shadow-sm" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i> {error}
           </div>
+        )}
 
-          {/* Campo Modelo */}
-          <div className="mb-3">
-            <label htmlFor="modelo" className="form-label">Modelo</label>
-            <input
-              type="text"
-              className="form-control"
-              id="modelo"
-              {...register("modelo", { required: "O modelo é obrigatório" })}
-            />
-            {errors.modelo && <p className="text-danger">{errors.modelo.message}</p>}
+        {/* Se não houver veículos, exibe mensagem */}
+        {veiculos.length === 0 ? (
+          <div className="alert alert-warning mb-4" role="alert">
+            Você não possui veículos cadastrados. Por favor, cadastre um veículo primeiro.
+            <button
+              onClick={() => navigate('/cadastro-veiculo')}
+              className="btn btn-sm btn-warning mt-2 d-block w-100"
+            >
+              Ir para Cadastro de Veículos
+            </button>
           </div>
+        ) : (
+          <>
+            {/* Lista de veículos do usuário */}
+            <div className="mb-4">
+              <label htmlFor="veiculo" className="form-label fw-bold">
+                Selecione o Veículo para a Reserva
+              </label>
+              <select
+                className="form-select form-select-lg p-3"
+                id="veiculo"
+                value={veiculoSelecionadoId || ""}
+                onChange={(e) => setVeiculoSelecionadoId(Number(e.target.value))}
+                disabled={isSubmitting}
+              >
+                {veiculos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.placa} - {v.marca} {v.modelo}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <button type="submit" className="btn btn-primary w-100">
-            Confirmar Reserva
-          </button>
-        </form>
+            {/* Botão de Submissão */}
+            <button
+              onClick={handleReserva}
+              disabled={isSubmitting || !veiculoSelecionadoId}
+              className={`btn btn-primary w-100 py-3 fw-bold shadow ${isSubmitting ? 'disabled' : ''}`}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Confirmando Reserva...
+                </>
+              ) : (
+                'Reservar Agora'
+              )}
+            </button>
+          </>
+        )}
+
+        {/* Botão de Cancelar/Voltar */}
+        <button
+          onClick={() => navigate('/vagas')}
+          className="btn btn-link text-secondary mt-3 w-100"
+        >
+          Cancelar e Voltar
+        </button>
       </div>
     </div>
   );
