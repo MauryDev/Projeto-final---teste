@@ -3,14 +3,14 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 export default function AdminRoute({ children }: { children: ReactNode }) {
-  const { username, loading, role } = useAuth();
+  const { email, loading, role } = useAuth();
 
   if (loading) {
     return <div>Carregando...</div>;
   }
 
   // Se o usuário não estiver logado ou não for um ADMIN, redireciona para a home.
-  if (!username || role !== "ADMIN") {
+  if (!email || role !== "ADMIN") {
     return <Navigate to="/" replace />;
   }
 

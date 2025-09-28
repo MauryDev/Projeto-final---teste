@@ -8,32 +8,29 @@ import AuthLayout from "../components/AuthLayout";
 type FormValues = {
   username: string;
   password: string;
-  nome: string;
-  cpf: string;
-  telefone: string;
+  // ✨ Os campos de cliente não são mais necessários aqui
 };
 
 export default function Cadastro() {
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormValues>();
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data: FormValues) => {
     setLoading(true);
     try {
+      // ✨ Apenas a requisição de cadastro do usuário é necessária
       await api.post('/usuarios', { username: data.username, password: data.password });
-      const loginResponse = await api.post('/auth', { username: data.username, password: data.password });
-      localStorage.setItem('token', loginResponse.data.token);
-      await api.post('/clientes', { nome: data.nome, cpf: data.cpf, telefone: data.telefone });
 
       Swal.fire({
         icon: "success",
-        title: "Cadastro realizado",
-        text: "Usuário e cliente criados com sucesso!",
-        timer: 2000,
+        title: "Usuário criado!",
+        text: "Sua conta foi criada. Faça login para completar seu perfil.",
+        timer: 3000,
         showConfirmButton: false,
       });
 
+      // Redireciona para a página de login
       navigate("/login");
 
     } catch (err: any) {
@@ -45,31 +42,21 @@ export default function Cadastro() {
     }
   };
 
-  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 11);
-    setValue('cpf', value, { shouldValidate: true });
-  };
-
-  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 15);
-    setValue('telefone', value, { shouldValidate: true });
-  };
-
   return (
     <AuthLayout
       title="Criar Conta"
       subtitle="Cadastre-se para usar o sistema"
       iconColor="#28a745"
-      subtitleStyle={{ marginBottom: '0rem' }} // diminui distância até o primeiro input
+      subtitleStyle={{ marginBottom: '0rem' }}
     >
       <form onSubmit={handleSubmit(onSubmit)} style={{ gap: '0.25rem' }}>
         <div className="mb-0.5">
-          <label htmlFor="username" className="form-label">Usuário</label>
+          <label htmlFor="username" className="form-label">Email</label>
           <input
             id="username"
             className="form-control"
             type="text"
-            placeholder="Digite seu usuário"
+            placeholder="Digite seu email"
             {...register("username", { required: "Usuário é obrigatório" })}
             disabled={loading}
           />
@@ -91,58 +78,6 @@ export default function Cadastro() {
             autoComplete="new-password"
           />
           {errors.password && <p className="text-danger mb-0">{errors.password.message}</p>}
-        </div>
-
-        <div className="mb-0.5">
-          <label htmlFor="nome" className="form-label">Nome Completo</label>
-          <input
-            id="nome"
-            className="form-control"
-            type="text"
-            placeholder="Digite seu nome"
-            {...register("nome", {
-              required: "Nome é obrigatório",
-              minLength: { value: 5, message: "Nome precisa ter no mínimo 5 caracteres" },
-            })}
-            disabled={loading}
-          />
-          {errors.nome && <p className="text-danger mb-0">{errors.nome.message}</p>}
-        </div>
-
-        <div className="mb-0.5">
-          <label htmlFor="cpf" className="form-label">CPF</label>
-          <input
-            id="cpf"
-            className="form-control"
-            type="text"
-            placeholder="Apenas números"
-            {...register("cpf", {
-              required: "CPF é obrigatório",
-              minLength: { value: 11, message: "CPF deve ter 11 dígitos" },
-              maxLength: { value: 11, message: "CPF deve ter 11 dígitos" },
-            })}
-            onChange={handleCpfChange}
-            disabled={loading}
-          />
-          {errors.cpf && <p className="text-danger mb-0">{errors.cpf.message}</p>}
-        </div>
-
-        <div className="mb-0.5">
-          <label htmlFor="telefone" className="form-label">Telefone</label>
-          <input
-            id="telefone"
-            className="form-control"
-            type="text"
-            placeholder="Apenas números"
-            {...register("telefone", {
-              required: "Telefone é obrigatório",
-              minLength: { value: 11, message: "Telefone deve ter no mínimo 11 dígitos" },
-              maxLength: { value: 15, message: "Telefone deve ter no máximo 15 dígitos" },
-            })}
-            onChange={handleTelefoneChange}
-            disabled={loading}
-          />
-          {errors.telefone && <p className="text-danger mb-0">{errors.telefone.message}</p>}
         </div>
 
         <button

@@ -3,8 +3,18 @@ import { useAuth } from "../hooks/useAuth";
 import { ClienteService, ClienteForm } from "../api/clienteService";
 import Swal from "sweetalert2";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
+import api from "../api/api";
+import { AxiosError } from "axios";
 
-// Componente para exibir e editar campos de informação (sem alterações)
+// Interface para o DTO de requisição
+interface ClienteRequestDto {
+  nome: string;
+  cpf: string;
+  telefone: string;
+  email: string;
+}
+
+// Componente para exibir e editar campos de informação
 const InfoField = ({ label, name, value, onChange, isEditing, type = "text" }: {
   label: string;
   name: keyof ClienteForm;
@@ -29,7 +39,7 @@ const InfoField = ({ label, name, value, onChange, isEditing, type = "text" }: {
 );
 
 export default function PerfilUsuario() {
-  const { id: userId, loading: authLoading } = useAuth();
+  const { id: userId, email: userEmail, loading: authLoading } = useAuth();
   const [cliente, setCliente] = useState<ClienteForm | null>(null);
   const [formData, setFormData] = useState<ClienteForm | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,21 +57,31 @@ export default function PerfilUsuario() {
     const fetchCliente = async () => {
       try {
         const data = await ClienteService.fetchClienteByUsuarioId(userId);
-        if (!data) setError("Cliente não encontrado");
-        else {
-          setCliente(data);
-          setFormData(data);
-        }
+        setCliente(data);
+        setFormData(data);
+        setIsEditing(false); // Por padrão, entra em modo de visualização
+        setError(null);
       } catch (err) {
-        console.error("Erro ao carregar cliente:", err);
-        setError("Erro ao carregar dados do cliente");
+        const axiosError = err as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+          // Cliente não encontrado (404), inicializa o formulário vazio
+          setCliente(null);
+          setFormData({ nome: '', cpf: '', telefone: '', email: userEmail || '' });
+          setIsEditing(true); // Entra em modo de edição para o primeiro cadastro
+          setError(null);
+        } else {
+          console.error("Erro ao carregar cliente:", err);
+          setError("Erro ao carregar dados do cliente.");
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    if (!authLoading) fetchCliente();
-  }, [userId, authLoading]);
+    if (!authLoading && userId) {
+      fetchCliente();
+    }
+  }, [userId, authLoading, userEmail]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (formData) {
@@ -71,42 +91,36 @@ export default function PerfilUsuario() {
 
   const handleSave = async () => {
     if (!formData) return;
+    setLoading(true);
 
     try {
-      const payload: ClienteForm = {
-        ...formData,
-        telefone: formData.telefone ?? "",
-        email: formData.email ?? "",
+      const payload: ClienteRequestDto = {
+        nome: formData.nome,
+        cpf: formData.cpf,
+        telefone: formData.telefone,
+        email: formData.email || '',
       };
 
-      const updated = await ClienteService.updateCliente(payload);
-      setCliente(updated);
-      setFormData(updated);
-      setIsEditing(false);
-
-      // Supondo que a API de atualização de perfil retorne um novo token JWT
-      // Após a atualização, pode obter o novo token do header da resposta (se a sua API suportar)
-      // Ou, em um cenário mais simples, a API de login pode ser chamada novamente para um novo token
-      // Para fins de demonstração, se o backend não retornar o token, a lógica abaixo é simplista e pode ser melhorada
-
-      // Essa é a melhor prática: a API de login deve retornar o token, e o login deve ser chamado
-      // Para esse caso, a atualização do perfil não altera o token, então simplesmente confiar
-      // que o email foi atualizado no backend e ele será refletido no próximo login.
-      // A função 'setUsername' era uma má prática, pois não atualizava o token.
-
-      // Se a API de update retornar o token JWT no header 'Authorization', pode fazer:
-      // const response = await ClienteService.updateCliente(payload);
-      // const newToken = response.headers['authorization']?.split(' ')[1];
-      // if (newToken) {
-      //   login(newToken);
-      // }
+      if (cliente) {
+        // Se o cliente já existe, faz a requisição PUT para atualizar
+        const updated = await ClienteService.updateCliente(payload);
+        setCliente(updated);
+        setFormData(updated);
+        setIsEditing(false);
+      } else {
+        // Se o cliente não existe, faz a requisição POST para criar
+        const created = await api.post('/clientes', payload);
+        setCliente(created.data);
+        setFormData(created.data);
+        setIsEditing(false);
+      }
 
       Swal.fire({
         icon: 'success',
         title: 'Sucesso!',
-        text: 'Perfil atualizado com sucesso!',
+        text: 'Perfil salvo com sucesso!',
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       });
 
     } catch (err) {
@@ -114,9 +128,11 @@ export default function PerfilUsuario() {
       Swal.fire({
         icon: 'error',
         title: 'Erro!',
-        text: 'Erro ao atualizar perfil. Tente novamente.',
-        showConfirmButton: true
+        text: 'Erro ao salvar perfil. Tente novamente.',
+        showConfirmButton: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,7 +140,7 @@ export default function PerfilUsuario() {
     setShowPasswordModal(true);
   };
 
-  if (loading || authLoading) {
+  if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" role="status">
@@ -135,7 +151,9 @@ export default function PerfilUsuario() {
   }
 
   if (error) return <p className="text-center mt-5 text-danger">{error}</p>;
-  if (!cliente || !formData) return <p className="text-center mt-5">Cliente não encontrado</p>;
+  if (!formData) return <p className="text-center mt-5">Dados do formulário não disponíveis.</p>;
+
+  const isNewProfile = !cliente;
 
   return (
     <>
@@ -145,7 +163,7 @@ export default function PerfilUsuario() {
           style={{ maxWidth: "700px", margin: "0 auto" }}
         >
           <div className="card-header bg-primary text-dark d-flex justify-content-between align-items-center rounded-top-4 p-4">
-            <h4 className="mb-0 fw-bold">Meu Perfil</h4>
+            <h4 className="mb-0 fw-bold">{isNewProfile ? 'Completar Perfil' : 'Meu Perfil'}</h4>
             <span className={`badge rounded-pill ${isEditing ? "bg-warning" : "bg-light"} text-dark`}>
               {isEditing ? "Modo Edição" : "Visualização"}
             </span>
@@ -185,40 +203,49 @@ export default function PerfilUsuario() {
 
             <div className="d-flex justify-content-between flex-wrap mt-4">
               {!isEditing ? (
-                <button
-                  className="btn btn-outline-primary shadow-sm me-2 mb-2"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <i className="bi bi-pencil-square me-2"></i> Editar Perfil
-                </button>
+                <>
+                  <button
+                    className="btn btn-outline-primary shadow-sm me-2 mb-2"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <i className="bi bi-pencil-square me-2"></i> Editar Perfil
+                  </button>
+                  <button
+                    className="btn btn-outline-secondary shadow-sm mb-2"
+                    onClick={handleChangePassword}
+                  >
+                    <i className="bi bi-lock me-2"></i> Alterar Senha
+                  </button>
+                </>
               ) : (
                 <>
                   <button
                     className="btn btn-success shadow-sm me-2 mb-2"
                     onClick={handleSave}
+                    disabled={loading}
                   >
-                    <i className="bi bi-check-circle me-2"></i> Salvar Alterações
+                    <i className="bi bi-check-circle me-2"></i> Salvar Perfil
                   </button>
                   <button
                     className="btn btn-danger shadow-sm me-2 mb-2"
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => {
+                      if (cliente) {
+                        setFormData(cliente);
+                      }
+                      setIsEditing(false);
+                    }}
+                    disabled={loading}
                   >
                     <i className="bi bi-x-circle me-2"></i> Cancelar
                   </button>
                 </>
               )}
-              <button
-                className="btn btn-outline-secondary shadow-sm mb-2"
-                onClick={handleChangePassword}
-              >
-                <i className="bi bi-lock me-2"></i> Alterar Senha
-              </button>
             </div>
 
             {isEditing && (
               <p className="mt-3 text-center text-muted fst-italic">
                 <i className="bi bi-info-circle me-2"></i>
-                Preencha os campos e clique em "Salvar Alterações" para atualizar seu perfil.
+                Preencha os campos e clique em "Salvar" para atualizar seu perfil.
               </p>
             )}
           </div>

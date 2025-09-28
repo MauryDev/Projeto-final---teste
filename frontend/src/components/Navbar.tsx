@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Navbar() {
-  const { username, logout, role } = useAuth();
+  const { email, logout, role } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -37,7 +37,7 @@ export default function Navbar() {
             <li className="nav-item">
               <Link className="nav-link active" aria-current="page" to="/">Home</Link>
             </li>
-            {username && (
+            {email && (
               <li className="nav-item dropdown">
                 <button
                   className="nav-link dropdown-toggle bg-transparent border-0 text-white hover:text-white focus:text-white"
@@ -69,7 +69,7 @@ export default function Navbar() {
             )}
           </ul>
           <ul className="navbar-nav">
-            {!username ? (
+            {!email ? (
               <>
                 <li className="nav-item">
                   <Link className="nav-link" to="/login">Login</Link>
@@ -86,7 +86,7 @@ export default function Navbar() {
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  <i className="bi bi-person-circle me-2"></i> {username}
+                  <i className="bi bi-person-circle me-2"></i> {email}
                 </button>
                 <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                   <li>
