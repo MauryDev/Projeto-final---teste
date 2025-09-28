@@ -11,6 +11,8 @@ import Reserva from "./pages/Reserva";
 import MinhasReservas from "./pages/MinhasReservas";
 import GerenciarVeiculos from "./pages/GerenciarVeiculos";
 import PerfilUsuario from "./pages/PerfilUsuario";
+import GerenciarVagas from "./pages/GerenciarVagas";
+import AdminRoute from "./components/AdminRoute";
 
 export default function App() {
   return (
@@ -54,6 +56,13 @@ export default function App() {
                 <PerfilUsuario />
               </PrivateRoute>
             }
+          />
+          <Route
+            path="/gerenciar-vagas"
+            element={
+              <AdminRoute>
+                <GerenciarVagas />
+              </AdminRoute>}
           />
         </Routes>
         <Footer />

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { ClienteService, ClienteForm } from "../api/clienteService";
-import Swal from "sweetalert2"; // Importa o SweetAlert2
-import { ChangePasswordModal } from "../components/ChangePasswordModal"; // Importa o modal
+import Swal from "sweetalert2";
+import { ChangePasswordModal } from "../components/ChangePasswordModal";
 
-// Componente para exibir e editar campos de informação
+// Componente para exibir e editar campos de informação (sem alterações)
 const InfoField = ({ label, name, value, onChange, isEditing, type = "text" }: {
   label: string;
   name: keyof ClienteForm;
@@ -29,13 +29,13 @@ const InfoField = ({ label, name, value, onChange, isEditing, type = "text" }: {
 );
 
 export default function PerfilUsuario() {
-  const { id: userId, loading: authLoading, setUsername } = useAuth();
+  const { id: userId, loading: authLoading } = useAuth();
   const [cliente, setCliente] = useState<ClienteForm | null>(null);
   const [formData, setFormData] = useState<ClienteForm | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false); // Novo estado para o modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -84,7 +84,22 @@ export default function PerfilUsuario() {
       setFormData(updated);
       setIsEditing(false);
 
-      setUsername(updated.email);
+      // Supondo que a API de atualização de perfil retorne um novo token JWT
+      // Após a atualização, pode obter o novo token do header da resposta (se a sua API suportar)
+      // Ou, em um cenário mais simples, a API de login pode ser chamada novamente para um novo token
+      // Para fins de demonstração, se o backend não retornar o token, a lógica abaixo é simplista e pode ser melhorada
+
+      // Essa é a melhor prática: a API de login deve retornar o token, e o login deve ser chamado
+      // Para esse caso, a atualização do perfil não altera o token, então simplesmente confiar
+      // que o email foi atualizado no backend e ele será refletido no próximo login.
+      // A função 'setUsername' era uma má prática, pois não atualizava o token.
+
+      // Se a API de update retornar o token JWT no header 'Authorization', pode fazer:
+      // const response = await ClienteService.updateCliente(payload);
+      // const newToken = response.headers['authorization']?.split(' ')[1];
+      // if (newToken) {
+      //   login(newToken);
+      // }
 
       Swal.fire({
         icon: 'success',
@@ -177,12 +192,20 @@ export default function PerfilUsuario() {
                   <i className="bi bi-pencil-square me-2"></i> Editar Perfil
                 </button>
               ) : (
-                <button
-                  className="btn btn-success shadow-sm me-2 mb-2"
-                  onClick={handleSave}
-                >
-                  <i className="bi bi-check-circle me-2"></i> Salvar Alterações
-                </button>
+                <>
+                  <button
+                    className="btn btn-success shadow-sm me-2 mb-2"
+                    onClick={handleSave}
+                  >
+                    <i className="bi bi-check-circle me-2"></i> Salvar Alterações
+                  </button>
+                  <button
+                    className="btn btn-danger shadow-sm me-2 mb-2"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    <i className="bi bi-x-circle me-2"></i> Cancelar
+                  </button>
+                </>
               )}
               <button
                 className="btn btn-outline-secondary shadow-sm mb-2"
