@@ -10,7 +10,7 @@ interface VagaFormModalProps {
 
 export const VagaFormModal: React.FC<VagaFormModalProps> = ({ show, onClose, onSave, recursoToEdit }) => {
   const [formData, setFormData] = useState<RecursoRequest>({
-    tipo: "NORMAL",
+    tipo: "CARRO_PEQUENO",
     status: "available",
   });
 
@@ -22,7 +22,7 @@ export const VagaFormModal: React.FC<VagaFormModalProps> = ({ show, onClose, onS
       });
     } else {
       setFormData({
-        tipo: "NORMAL",
+        tipo: "CARRO_PEQUENO",
         status: "available",
       });
     }
@@ -61,9 +61,12 @@ export const VagaFormModal: React.FC<VagaFormModalProps> = ({ show, onClose, onS
                   value={formData.tipo}
                   onChange={handleChange}
                 >
-                  <option value="NORMAL">Normal</option>
-                  <option value="PCD">PCD</option>
-                  <option value="IDOSO">Idoso</option>
+                  <option value="CARRO_PEQUENO">Carro Pequeno</option>
+                  <option value="CARRO_GRANDE">Carro Grande</option>
+                  <option value="MOTO">Moto</option>
+                  <option value="VAGA_PCD">PCD</option>
+                  <option value="VAGA_PRIORIDADE">Prioridade</option>
+                  <option value="VAGA_ELETRICA">Elétrica</option>
                 </select>
               </div>
               <div className="mb-3">

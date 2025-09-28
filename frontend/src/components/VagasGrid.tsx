@@ -1,3 +1,5 @@
+// src/components/VagasGrid.tsx
+
 import React from "react";
 import { RecursoResponse } from "../api/vagaService";
 
@@ -10,69 +12,63 @@ interface VagasGridProps {
 const getStatusDetails = (status: string) => {
   switch (status) {
     case "available":
-      return { label: "Disponível", icon: "bi-check-circle-fill", color: "text-success" };
+      return { label: "Disponível", icon: "✅" };
     case "occupied":
-      return { label: "Ocupada", icon: "bi-x-circle-fill", color: "text-danger" };
+      return { label: "Ocupada", icon: "❌" };
     case "reserved":
-      return { label: "Reservada", icon: "bi-info-circle-fill", color: "text-warning" };
+      return { label: "Reservada", icon: "⏳" };
     default:
-      return { label: "Desconhecido", icon: "bi-question-circle-fill", color: "text-secondary" };
+      return { label: "Desconhecido", icon: "❓" };
   }
 };
 
-const getTipoVagaDetails = (tipo: string) => {
+const getTipoDetails = (tipo: string) => {
   switch (tipo) {
-    case "CARRO_PEQUENO":
-      return { label: "Carro Pequeno", icon: "bi-car-front-fill" };
-    case "CARRO_GRANDE":
-      return { label: "Carro Grande", icon: "bi-truck" };
-    case "MOTO":
-      return { label: "Moto", icon: "bi-motorbike" };
-    case "VAGA_PCD":
-      return { label: "PCD", icon: "bi-person-wheelchair" };
-    case "VAGA_ELETRICA":
-      return { label: "Elétrica", icon: "bi-ev-front-fill" };
-    case "VAGA_PRIORIDADE":
-      return { label: "Prioridade", icon: "bi-arrow-through-heart-fill" };
-    default:
-      return { label: "Não Identificado", icon: "bi-question-square" };
+    case 'CARRO_PEQUENO': return { label: 'Pequeno', emoji: '🚗', colorClass: 'info-badge-default' };
+    case 'CARRO_GRANDE': return { label: 'Grande', emoji: '🚗', colorClass: 'info-badge-default' };
+    case 'MOTO': return { label: 'Moto', emoji: '🏍️', colorClass: 'info-badge-default' };
+    case 'VAGA_PCD': return { label: 'Acessível', emoji: '♿', colorClass: 'info-badge-pcd' };
+    case 'VAGA_PRIORIDADE': return { label: 'Prioridade', emoji: '⭐', colorClass: 'info-badge-priority' };
+    case 'VAGA_ELETRICA': return { label: 'Elétrica', emoji: '⚡', colorClass: 'info-badge-electric' };
+    default: return { label: 'Padrão', emoji: '🅿️', colorClass: 'info-badge-default' };
   }
 };
 
 const VagaCard: React.FC<any> = ({ recurso, onEdit, onDelete }) => {
-  const status = getStatusDetails(recurso.status);
-  const tipo = getTipoVagaDetails(recurso.tipo);
+  const statusDetails = getStatusDetails(recurso.status);
+  const tipoDetails = getTipoDetails(recurso.tipo);
 
   return (
-    <div className="col-lg-3 col-md-4 col-sm-6 mb-4">
-      <div className={`card h-100 shadow-sm border-0 rounded-4 overflow-hidden`}>
-        <div className={`card-header ${status.color} bg-light py-3 border-0`}>
-          <h5 className="card-title fw-bold mb-0 text-center">
-            <i className={`bi ${tipo.icon} me-2 ${status.color}`}></i>
-            <span className="text-secondary">{recurso.nome}</span>
-          </h5>
+    <div className={`parking-spot ${recurso.status}`}>
+      <div className="spot-header">
+        <span className="spot-number">
+          {recurso.nome}
+        </span>
+        <span className="spot-status-badge">
+          {statusDetails.icon} {statusDetails.label}
+        </span>
+      </div>
+
+      <div className={`spot-info ${tipoDetails.colorClass}`}>
+        <div className="d-flex align-items-center">
+          <span className="spot-emoji">{tipoDetails.emoji}</span>
+          <span className="spot-type">{tipoDetails.label}</span>
         </div>
-        <div className="card-body d-flex flex-column justify-content-center align-items-center text-center">
-          <div className="mb-2">
-            <i className={`bi ${status.icon} ${status.color} display-5`}></i>
-          </div>
-          <p className={`fw-bold text-uppercase fs-5 ${status.color}`}>{status.label}</p>
-          <p className="text-muted mb-0">{tipo.label}</p>
-        </div>
-        <div className="card-footer bg-light border-0 d-flex justify-content-around py-3">
-          <button
-            className="btn btn-sm btn-outline-info rounded-pill"
-            onClick={() => onEdit(recurso)}
-          >
-            <i className="bi bi-pencil-square me-1"></i> Editar
-          </button>
-          <button
-            className="btn btn-sm btn-outline-danger rounded-pill"
-            onClick={() => onDelete(recurso.id!)}
-          >
-            <i className="bi bi-trash me-1"></i> Excluir
-          </button>
-        </div>
+      </div>
+
+      <div className="d-flex justify-content-center mt-3 gap-2">
+        <button
+          className="btn btn-primary w-50"
+          onClick={() => onEdit(recurso)}
+        >
+          <i className="bi bi-pencil-square me-1"></i> Editar
+        </button>
+        <button
+          className="btn btn-danger w-50"
+          onClick={() => onDelete(recurso.id!)}
+        >
+          <i className="bi bi-trash me-1"></i> Excluir
+        </button>
       </div>
     </div>
   );
@@ -80,7 +76,7 @@ const VagaCard: React.FC<any> = ({ recurso, onEdit, onDelete }) => {
 
 export const VagasGrid: React.FC<VagasGridProps> = ({ recursos, onEdit, onDelete }) => {
   return (
-    <div className="row">
+    <div className="parking-lot-grid">
       {recursos.map((recurso) => (
         <VagaCard key={recurso.id} recurso={recurso} onEdit={onEdit} onDelete={onDelete} />
       ))}
