@@ -1,43 +1,85 @@
-﻿<h2 align="center">🅿️🚗 Sistema de Estacionamento Inteligente com IoT utilizando React e Spring Boot</h2>
- 
+<h2 align="center">🅿️ Smart Parking IoT</h2>
+<h3 align="center">🚗🏙️ Sistema de Estacionamento Inteligente com React e Spring Boot</h3>
 
-📖 Introdução
-
-Este projeto foi desenvolvido na disciplina de Web Avançado, com foco em aplicar conceitos modernos de desenvolvimento de sistemas distribuídos e seguros.
-O sistema tem como objetivo gerenciar um estacionamento inteligente utilizando integração com IoT, onde recursos (vagas de estacionamento) podem ser monitorados e reservados em tempo real.
+## 📖 Introdução
+O `Smart Parking IoT` é um sistema de **estacionamento inteligente com IOT** desenvolvido no contexto da disciplina de Programação **Web** Avançada, com foco na aplicação de conceitos modernos de desenvolvimento de sistemas distribuídos e seguros. A solução integra um `backend em Spring Boot` e um `frontend em React + TypeScript`, incorporando autenticação com `JWT`, gestão de vagas em tempo real e uma interface moderna e responsiva para o usuário. Com a integração de recursos de `IoT`, o sistema possibilita o monitoramento e a reserva de vagas de forma automatizada, demonstrando práticas de arquitetura em camadas, segurança robusta e comunicação eficiente entre os módulos.
 
 ---
 
-🎯 Objetivo
-- Permitir o cadastro, reserva e liberação de vagas de estacionamento inteligentes.
-- Garantir segurança e controle de acesso via autenticação JWT.
-- Proporcionar uma API RESTful documentada e integrada ao frontend em React com Typescript.
-- Aplicar práticas modernas como migrações de banco de dados, tratamento de exceções, gestão de timezone e CORS configurado.
+## 📌 Objetivo
+O objetivo do sistema é oferecer uma solução robusta e segura para o **gerenciamento de vagas de estacionamento**, permitindo:
+- Reservas online de vagas 🚙  
+- Autenticação segura via JWT 🔑  
+- Monitoramento em tempo real de status das vagas 📡  
+- Integração IoT para controle e automação ⚡  
 
 ---
-🛠️ Tecnologias Utilizadas
 
-🔹 Backend
-- Spring Boot – Framework principal para construção da API.
-- Spring Security + JWT – Autenticação e autorização seguras.
-- Springdoc OpenAPI (Swagger) – Documentação interativa dos endpoints.
-- Flyway – Controle e versionamento do esquema do banco de dados.
-- PostgreSQL – Banco de dados relacional utilizado.
-- CORS Configurado – Permite comunicação entre frontend e backend.
-- Tratamento de Exceções Customizado – Respostas padronizadas para erros.
-- Timezone configurado – Garantia de consistência em datas e horários.
+## 🛠️ Tecnologias Utilizadas
 
-🔹 Frontend
-- React (CRA) com Typescript – Interface do usuário moderna e tipada.
-- Yarn – Gerenciador de pacotes e execução do projeto.
+### 🌐 Backend (Java + Spring Boot)
+- **Spring Boot 3** – Framework principal  
+- **Spring Security + JWT** – Autenticação e autorização  
+- **Spring Data JPA** – Persistência de dados  
+- **SpringDoc OpenAPI** – Documentação interativa com Swagger  
+- **Flyway** – Migração e versionamento de banco de dados  
+- **PostgreSQL** – Banco de dados relacional  
+- **CORS Configurado** – Integração com frontend  
+- **Exception Handling Global** – Tratamento robusto de erros  
+- **TimeZone Configurada** – Garantia de consistência temporal  
 
-🔹 IoT
-- Integração com recursos que simulam sensores e dispositivos para controle de vagas.
+📂 Estrutura de pacotes do backend:
 
+```java
+java/br/edu/ifba/park/iot/backend
+├── audit
+├── infra
+├── jwt
+├── model
+├── repository
+├── security
+├── service
+└── web
+resources
+├── db
+├── static
+├── templates
+├── application.properties
+├── application-dev.properties
+└── application-test.properties
+```
 ---
-⚙️ Como Executar o Projeto
 
-📌 Backend (Spring Boot)
+### 💻 Frontend (React + TypeScript)
+- **Create React App (CRA)** com TypeScript  
+- **React Router DOM** – Navegação entre páginas  
+- **Axios** – Comunicação com backend  
+- **Bootstrap 5** – Estilização responsiva  
+- **Context API + Hooks** – Gerenciamento de estado  
+
+📂 Estrutura do frontend:
+
+```react
+src
+├── api
+├── assets
+├── components
+├── context
+├── hooks
+├── pages
+├── types
+├── utils
+├── App.tsx
+└── index.tsx
+```
+---
+## ⚙️ Como Executar o Projeto
+
+### 🔹 Pré-requisitos
+- [Node.js](https://nodejs.org/) (>= 18)  
+- [Yarn](https://yarnpkg.com/)  
+- [Java 17+](https://adoptium.net/)  
+- [PostgreSQL](https://www.postgresql.org/)  
 
 1. Clone o repositório:
 ```bash
@@ -87,11 +129,26 @@ O sistema utiliza JWT (JSON Web Token) para autenticação.
 - O usuário faz login e recebe um token.
 - O token deve ser enviado no cabeçalho Authorization: Bearer <token>.
 - Permissões de acesso são validadas pelo backend.
+- Rotas protegidas por Spring Security
+- Tokens armazenados no localStorage
 
-📑 Estrutura de Pastas
+---
+🧪 Testes
 
+- Testes unitários no backend com JUnit
+- Validações e tratamento de exceções centralizados
 
+---
+📅 Timezone
+
+- O sistema está configurado para UTC-3 (America/Sao_Paulo) garantindo consistência de horários em reservas, check-ins e relatórios.
+
+---
 ✅ Conclusão
 
-O projeto de Estacionamento Inteligente com IoT demonstra a aplicação prática de conceitos avançados de desenvolvimento web, incluindo arquitetura em camadas, segurança, documentação, versionamento de banco de dados e integração frontend-backend.
-Essa solução contribui para o aprendizado acadêmico e pode ser expandida para cenários reais, oferecendo maior eficiência, automação e controle na gestão de estacionamentos.
+O projeto Smart Parking IoT integra Spring Boot e React + TypeScript, aplicando boas práticas em autenticação, versionamento de banco de dados, arquitetura limpa e documentação interativa. Essa solução evidencia a aplicação prática de conceitos avançados de desenvolvimento web, como arquitetura em camadas, segurança robusta com JWT, controle de migrações via Flyway e integração eficiente entre frontend e backend. Além de atender ao propósito acadêmico, o sistema apresenta potencial de expansão para cenários reais, oferecendo maior eficiência, automação e controle na gestão de estacionamentos inteligentes. 🚀
+
+---
+👨‍💻 **Desenvolvido por:** Albert Silva de Jesus & Maury Santos – IFBA, Web Avançado  
+
+📘 **Licença:** MIT
