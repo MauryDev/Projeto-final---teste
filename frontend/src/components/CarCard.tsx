@@ -1,39 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { ReservaResponseDto, tipoVagaMap } from '../types/Reserva';
 import { format, isValid, differenceInMinutes, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { tipoVagaMap } from '../types/Reserva';
 
 interface CarCardProps {
-  reserva: {
-    id: number;
-    recursoId: number;
-    nomeRecurso: string;
-    tipoVaga: keyof typeof tipoVagaMap;
-    placaVeiculo: string;
-    marcaVeiculo: string;
-    modeloVeiculo: string;
-    horarioInicio: string;
-    horarioFim: string | null;
-  };
-  onFinalizarReserva: (reservaId: number) => void;
+  reserva: ReservaResponseDto;
+  onIniciarEstadia: (reservaId: number) => Promise<void>;
+  onFinalizarReserva: (reservaId: number) => Promise<void>;
 }
 
-const CarCard: React.FC<CarCardProps> = ({ reserva, onFinalizarReserva }) => {
+const CarCard: React.FC<CarCardProps> = ({ reserva, onIniciarEstadia, onFinalizarReserva }) => {
   const [elapsedTime, setElapsedTime] = useState('');
 
-  const startTime = parse(reserva.horarioInicio, 'dd-MM-yyyy HH:mm:ss', new Date());
-  const isValidDate = isValid(startTime);
+  // ✨ O estado local agora é removido. Usaremos diretamente `reserva.statusRecurso`
+  // para determinar qual botão exibir.
+
+  const startTime = reserva.horarioInicio ? parse(reserva.horarioInicio, 'dd-MM-yyyy HH:mm:ss', new Date()) : null;
+  const isValidDate = startTime ? isValid(startTime) : false;
 
   useEffect(() => {
-    if (!isValidDate) {
+    // Só atualiza o tempo se a vaga estiver 'occupied'
+    if (reserva.statusRecurso !== 'occupied' || !isValidDate) {
       setElapsedTime('Tempo não disponível');
       return;
     }
 
     const updateTime = () => {
       const now = new Date();
-      const diffInMinutes = differenceInMinutes(now, startTime);
+      const diffInMinutes = differenceInMinutes(now, startTime!);
       const hours = Math.floor(diffInMinutes / 60);
       const minutes = diffInMinutes % 60;
       setElapsedTime(`${hours}h ${minutes}min`);
@@ -42,9 +36,21 @@ const CarCard: React.FC<CarCardProps> = ({ reserva, onFinalizarReserva }) => {
     updateTime();
     const interval = setInterval(updateTime, 60000);
     return () => clearInterval(interval);
-  }, [startTime, isValidDate]);
+  }, [startTime, isValidDate, reserva.statusRecurso]); // Adicione a dependência do status
 
-  const formattedHorarioInicio = isValidDate
+  const handleButtonClick = async () => {
+    try {
+      if (reserva.statusRecurso === 'reserved') {
+        await onIniciarEstadia(reserva.id);
+      } else if (reserva.statusRecurso === 'occupied') {
+        await onFinalizarReserva(reserva.id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const formattedHorarioInicio = startTime && isValidDate
     ? format(startTime, 'dd/MM/yyyy HH:mm', { locale: ptBR })
     : 'Data inválida';
 
@@ -52,16 +58,26 @@ const CarCard: React.FC<CarCardProps> = ({ reserva, onFinalizarReserva }) => {
   const vagaEmoji = vagaConfig?.icon || '🅿️';
   const vagaColor = vagaConfig?.color || 'text-dark';
 
+  const isButtonDisabled = reserva.statusRecurso === 'available';
+  const buttonText =
+    reserva.statusRecurso === 'reserved' ? 'Iniciar Estadia' :
+      reserva.statusRecurso === 'occupied' ? 'Finalizar Estadia' :
+        'Disponível';
+  const buttonVariant =
+    reserva.statusRecurso === 'reserved' ? 'success' :
+      reserva.statusRecurso === 'occupied' ? 'danger' :
+        'secondary';
+
   return (
     <div className="car-card bg-white rounded-3 shadow-sm border border-secondary p-2 position-relative d-flex flex-column justify-content-between">
       <div className="text-center mb-3">
-        {/* Renderiza o emoji diretamente e aplica a cor */}
         <span className={`card-header-icon ${vagaColor}`} style={{ fontSize: '3rem' }}>
           {vagaEmoji}
         </span>
         <h5 className="mb-1 fw-bold mt-2">{reserva.nomeRecurso}</h5>
         <p className="text-muted small">{reserva.tipoVaga.toLowerCase().replace('_', ' ')}</p>
       </div>
+
       <hr className="my-2" />
       <div className="card-info my-3">
         <div className="d-flex align-items-center mb-2">
@@ -71,6 +87,7 @@ const CarCard: React.FC<CarCardProps> = ({ reserva, onFinalizarReserva }) => {
             <p className="mb-0 text-muted small">{formattedHorarioInicio}</p>
           </div>
         </div>
+
         <hr className="my-2" />
         <div className="d-flex align-items-center mb-2">
           <i className="bi bi-tags-fill me-2 text-warning" style={{ fontSize: '1.2rem' }}></i>
@@ -80,24 +97,28 @@ const CarCard: React.FC<CarCardProps> = ({ reserva, onFinalizarReserva }) => {
             <p className="mb-0 fw-bold text-danger">{reserva.placaVeiculo}</p>
           </div>
         </div>
-        <hr className="my-2" />
-        <div className="text-center mt-3">
-          <p className="mb-0 fw-bold text-success">
-            <i className="bi bi-stopwatch-fill me-2" style={{ fontSize: '1.2rem' }}></i>
-            Tempo Decorrido
-          </p>
-          <p className="display-6 fw-bold text-success">{elapsedTime}</p>
-        </div>
+
+        {reserva.statusRecurso === 'occupied' && (
+          <>
+            <hr className="my-2" />
+            <div className="d-flex align-items-center mb-2">
+              <i className="bi bi-hourglass-split me-2 text-primary" style={{ fontSize: '1.2rem' }}></i>
+              <div>
+                <p className="mb-0 fw-bold">Tempo Estacionado</p>
+                <p className="mb-0 text-muted small">{elapsedTime}</p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      <Button
-        variant="danger"
-        className="w-100 mt-3"
-        onClick={() => onFinalizarReserva(reserva.id)}
-        disabled={!!reserva.horarioFim}
+      <button
+        className={`btn btn-${buttonVariant} mt-auto fw-bold w-100`}
+        onClick={handleButtonClick}
+        disabled={isButtonDisabled}
       >
-        <i className="bi bi-box-arrow-right me-2"></i> Finalizar Estadia
-      </Button>
+        {buttonText}
+      </button>
     </div>
   );
 };

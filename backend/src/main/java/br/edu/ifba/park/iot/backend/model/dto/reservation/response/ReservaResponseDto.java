@@ -17,6 +17,7 @@ public class ReservaResponseDto {
   private String placaVeiculo;
   private String marcaVeiculo;
   private String modeloVeiculo;
+  private String statusRecurso;
 
   @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
   private LocalDateTime horarioInicio;

@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../api/api';
 import { useAuth } from '../hooks/useAuth';
 import CarCard from '../components/CarCard';
 import { ReservaResponseDto } from '../types/Reserva';
 
-
 const MinhasReservas: React.FC = () => {
   const { token, loading: authLoading } = useAuth();
+  const location = useLocation();
   const [reservas, setReservas] = useState<ReservaResponseDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (authLoading) {
-      return;
-    }
+    if (authLoading) return;
 
     const fetchReservas = async () => {
       if (!token) {
@@ -25,7 +24,6 @@ const MinhasReservas: React.FC = () => {
       setLoading(true);
       try {
         const response = await api.get('/reservas/ativas');
-        // ✅ Certifique-se de que o backend está retornando usuarioId e nomeUsuario se quiser usá-los no front
         setReservas(response.data);
         setError(null);
       } catch (err) {
@@ -39,15 +37,33 @@ const MinhasReservas: React.FC = () => {
     fetchReservas();
   }, [token, authLoading]);
 
+  useEffect(() => {
+    if (location.state?.novaReserva) {
+      setReservas(current => [...current, location.state.novaReserva]);
+    }
+  }, [location.state]);
+
+  const handleIniciarEstadia = async (reservaId: number) => {
+    try {
+      const response = await api.put(`/reservas/iniciar/${reservaId}`);
+      const reservaAtualizada = response.data;
+
+      setReservas(current =>
+        current.map(r => r.id === reservaId ? reservaAtualizada : r)
+      );
+    } catch (err: any) {
+      alert('Erro ao iniciar a estadia: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const handleFinalizarReserva = async (reservaId: number) => {
     try {
-      await api.put(`/reservas/finalizar/${reservaId}`);
-      // Remove a reserva finalizada da lista
-      setReservas(currentReservas =>
-        currentReservas.filter((reserva) => reserva.id !== reservaId)
-      );
+      const response = await api.put(`/reservas/finalizar/${reservaId}`);
+      const reservaAtualizada = response.data;
 
-      // alert('Reserva finalizada com sucesso!');
+      setReservas(current =>
+        current.map(r => r.id === reservaId ? reservaAtualizada : r)
+      );
     } catch (err: any) {
       alert('Erro ao finalizar a reserva: ' + (err.response?.data?.message || err.message));
     }
@@ -77,11 +93,15 @@ const MinhasReservas: React.FC = () => {
           <p className="text-muted">Parece que você ainda não estacionou. Que tal encontrar uma vaga agora?</p>
         </div>
       ) : (
-        <div className="row justify-content-center  gx-4 gy-4">
+        <div className="row justify-content-center gx-4 gy-4">
           {reservas.map((reserva) => (
             <div key={reserva.id} className="col-xxl-3 col-lg-4 col-md-6">
-              {/* ✅ Renderiza o componente CarCard */}
-              <CarCard reserva={reserva} onFinalizarReserva={handleFinalizarReserva} />
+              <CarCard
+                key={reserva.id}
+                reserva={reserva}
+                onIniciarEstadia={handleIniciarEstadia}
+                onFinalizarReserva={handleFinalizarReserva}
+              />
             </div>
           ))}
         </div>

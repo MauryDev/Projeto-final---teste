@@ -46,21 +46,16 @@ const Reserva: React.FC = () => {
       }
 
       try {
-        // 1. Busca detalhes da vaga
         const vagaResponse = await api.get(`/recursos/${id}`);
         setVaga(vagaResponse.data);
-
-        // 2. Busca veículos do usuário
         const veiculosResponse = await api.get(`/veiculos`);
         setVeiculos(veiculosResponse.data);
 
-        // Se houver veículos, pré-seleciona o primeiro
         if (veiculosResponse.data.length > 0) {
           setVeiculoSelecionadoId(veiculosResponse.data[0].id);
         }
 
       } catch (err: any) {
-        // Trata erros de carregamento, incluindo 401 se a API falhar aqui
         const errMsg = err.response?.data?.message || 'Erro de rede ou permissão negada.';
         setError(`Erro ao carregar dados: ${errMsg}`);
       } finally {
@@ -88,7 +83,6 @@ const Reserva: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Estrutura do JSON esperada pelo backend: Placa, Marca, Modelo
     const reservaData = {
       recursoId: id,
       placaVeiculo: veiculo.placa,
@@ -100,31 +94,27 @@ const Reserva: React.FC = () => {
       await api.post("/reservas", reservaData);
       setSuccessMessage('🎉 Reserva efetuada com sucesso! Redirecionando...');
 
-      // Redireciona após 3 segundos
+      // ✨ Redireciona para a tela de reservas ativas
       setTimeout(() => {
         setSuccessMessage(null);
-        navigate('/vagas');
+        navigate('/minhas-reservas');
       }, 3000);
 
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Erro de rede. Verifique o console.';
-
-      // Tratamento de conflito 409
       if (err.response?.status === 409) {
         setError(`Conflito: ${errorMessage}`);
-      }
-      // Tratamento de erro 401 (Se o token falhar na hora do POST)
-      else if (err.response?.status === 401) {
+      } else if (err.response?.status === 401) {
         setError('Sessão expirada. Por favor, faça login novamente.');
-      }
-      else {
+      } else {
         setError('Erro ao efetuar a reserva: ' + errorMessage);
       }
-
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // ... (código de renderização e JSX)
 
   if (loading) {
     return (
@@ -170,7 +160,6 @@ const Reserva: React.FC = () => {
           </strong>
         </p>
 
-        {/* Mensagens de feedback */}
         {successMessage && (
           <div className="alert alert-success p-3 mb-4 rounded-3 shadow-sm" role="alert">
             <i className="bi bi-check-circle-fill me-2"></i> {successMessage}
@@ -183,7 +172,6 @@ const Reserva: React.FC = () => {
           </div>
         )}
 
-        {/* Se não houver veículos, exibe mensagem */}
         {veiculos.length === 0 ? (
           <div className="alert alert-warning mb-4" role="alert">
             Você não possui veículos cadastrados. Por favor, cadastre um veículo primeiro.
@@ -196,7 +184,6 @@ const Reserva: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Lista de veículos do usuário */}
             <div className="mb-4">
               <label htmlFor="veiculo" className="form-label fw-bold">
                 Selecione o Veículo para a Reserva
@@ -216,7 +203,6 @@ const Reserva: React.FC = () => {
               </select>
             </div>
 
-            {/* Botão de Submissão */}
             <button
               onClick={handleReserva}
               disabled={isSubmitting || !veiculoSelecionadoId}
@@ -234,7 +220,6 @@ const Reserva: React.FC = () => {
           </>
         )}
 
-        {/* Botão de Cancelar/Voltar */}
         <button
           onClick={() => navigate('/vagas')}
           className="btn btn-link text-secondary mt-3 w-100"

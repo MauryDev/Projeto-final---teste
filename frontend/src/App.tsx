@@ -24,12 +24,19 @@ export default function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />
-            <Route path="/reservar/:id" element={<Reserva />} />
             <Route
               path="/vagas"
               element={
                 <PrivateRoute>
                   <VagasDeEstacionamento />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reservar/:id"
+              element={
+                <PrivateRoute>
+                  <Reserva />
                 </PrivateRoute>
               }
             />

@@ -24,4 +24,5 @@ export interface ReservaResponseDto {
   nomeUsuario: string;
   horarioInicio: string;
   horarioFim: string | null;
+  statusRecurso: 'available' | 'reserved' | 'occupied';
 }

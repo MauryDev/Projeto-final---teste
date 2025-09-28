@@ -2,14 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { ReservationFeedback } from '../types/ReservationFeedback';
-
-interface Vaga {
-  id: number;
-  numeroVaga: number;
-  nome: string;
-  status: 'available' | 'occupied';
-  tipo: 'CARRO_PEQUENO' | 'CARRO_GRANDE' | 'MOTO' | 'VAGA_PRIORIDADE' | 'VAGA_PCD' | 'VAGA_ELETRICA';
-}
+import { Vaga } from '../types/Vaga';
 
 // --- DEFINIÇÃO DE TIPOS E ESTILOS INLINE ---
 const customStyles = `
@@ -185,9 +178,14 @@ const VagasDeEstacionamento: React.FC = () => {
     }
   }, [fetchVagas, feedback]);
 
-  const handleVagaClick = (id: number, status: 'available' | 'occupied') => {
+  const handleVagaClick = (id: number, status: 'available' | 'reserved' | 'occupied') => {
     if (status === 'available') {
       navigate(`/reservar/${id}`);
+    } else if (status === 'reserved') { // Nova lógica para vagas reservadas
+      setFeedback({
+        type: 'danger',
+        message: `A Vaga ${id} já está reservada.`
+      });
     } else {
       setFeedback({
         type: 'danger',
@@ -271,7 +269,11 @@ const VagasDeEstacionamento: React.FC = () => {
                   </span>
 
                   <span className="spot-status-badge">
-                    {isAvailable ? '✅ Livre' : '❌ Ocupada'}
+                    <span className="spot-status-badge">
+                      {vaga.status === 'available' && '✅ Livre'}
+                      {vaga.status === 'reserved' && '🟡 Reservada'}
+                      {vaga.status === 'occupied' && '❌ Ocupada'}
+                    </span>
                   </span>
                 </div>
 
@@ -284,7 +286,7 @@ const VagasDeEstacionamento: React.FC = () => {
                 </div>
 
                 {/* Botão de Ação */}
-                {isAvailable ? (
+                {vaga.status === 'available' ? (
                   <button
                     className="btn btn-primary w-100 mt-3"
                     onClick={(e) => {
@@ -294,12 +296,13 @@ const VagasDeEstacionamento: React.FC = () => {
                   >
                     RESERVAR 📲
                   </button>
+                ) : vaga.status === 'reserved' ? (
+                  <button className="btn btn-warning w-100 mt-3" disabled>
+                    RESERVADA 🟡
+                  </button>
                 ) : (
-                  <button
-                    className="btn btn-secondary w-100 mt-3"
-                    disabled
-                  >
-                    VAGA INDISPONÍVEL
+                  <button className="btn btn-secondary w-100 mt-3" disabled>
+                    OCUPADA ❌
                   </button>
                 )}
               </div>

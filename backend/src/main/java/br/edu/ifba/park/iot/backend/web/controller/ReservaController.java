@@ -86,7 +86,7 @@ public class ReservaController {
                     return veiculoRepository.save(novoVeiculo);
                 });
 
-        recurso.setStatus("occupied");
+        recurso.setStatus("reserved");
         recursoRepository.save(recurso);
 
         Reserva reserva = new Reserva();
@@ -98,6 +98,43 @@ public class ReservaController {
 
         Reserva novaReserva = reservaRepository.save(reserva);
         return ResponseEntity.status(HttpStatus.CREATED).body(ReservaMapper.toDto(novaReserva));
+    }
+
+    @Operation(summary = "Inicia a estadia de uma reserva", description = "Altera o status do recurso de 'reserved' para 'occupied', indicando que o usuário iniciou a estadia. "
+            + "Requisição exige um Bearer Token e só pode ser feita pelo dono da reserva.", security = @SecurityRequirement(name = "security"), responses = {
+                    @ApiResponse(responseCode = "200", description = "Estadia iniciada com sucesso.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ReservaResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Reserva não encontrada.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
+                    @ApiResponse(responseCode = "403", description = "Acesso negado. O usuário não é o dono da reserva.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
+                    @ApiResponse(responseCode = "409", description = "Conflito: a reserva não está em estado 'reserved'.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class)))
+            })
+    @PutMapping("/iniciar/{reservaId}")
+    public ResponseEntity<ReservaResponseDto> iniciarEstadia(@PathVariable Long reservaId) {
+        Authentication autenticacao = SecurityContextHolder.getContext().getAuthentication();
+        String nomeUsuarioAtual = autenticacao.getName();
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByUsername(nomeUsuarioAtual);
+
+        if (usuarioOptional.isEmpty()) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+        Usuario usuario = usuarioOptional.get();
+
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva não encontrada."));
+
+        if (!reserva.getUsuario().equals(usuario)) {
+            throw new AccessDeniedException("Você não tem permissão para iniciar esta estadia.");
+        }
+
+        Recurso recurso = reserva.getRecurso();
+        if (!"reserved".equals(recurso.getStatus())) {
+            throw new ReservaConflictException("A reserva não está em estado reservado.");
+        }
+
+        recurso.setStatus("occupied");
+        recursoRepository.save(recurso);
+
+        Reserva reservaAtualizada = reservaRepository.save(reserva);
+        return ResponseEntity.ok(ReservaMapper.toDto(reservaAtualizada));
     }
 
     @Operation(summary = "Finaliza uma reserva", description = "Finaliza a reserva, preenchendo o horário de saída.", security = @SecurityRequirement(name = "security"), responses = {
@@ -121,6 +158,12 @@ public class ReservaController {
 
         if (!reserva.getUsuario().equals(usuario)) {
             throw new AccessDeniedException("Você não tem permissão para finalizar esta reserva.");
+        }
+
+        // verificação para o status da vaga antes de finalizar
+        Recurso recurso = reserva.getRecurso();
+        if (!"occupied".equals(recurso.getStatus())) {
+            throw new ReservaConflictException("A reserva não está em estado ocupado e não pode ser finalizada.");
         }
 
         reserva.setHorarioFim(LocalDateTime.now());

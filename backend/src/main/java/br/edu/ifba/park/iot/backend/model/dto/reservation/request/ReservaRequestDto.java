@@ -1,5 +1,3 @@
-// src/main/java/br/edu/ifba/park/iot/backend/model/dto/reservation/request/ReservaRequestDto.java
-
 package br.edu.ifba.park.iot.backend.model.dto.reservation.request;
 
 import lombok.AllArgsConstructor;
