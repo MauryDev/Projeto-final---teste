@@ -1,14 +1,13 @@
-export default function Footer() {
+import React from 'react';
+
+// interface para as propriedades do componente
+interface FooterProps {
+  style?: React.CSSProperties;
+}
+
+export default function Footer({ style }: FooterProps) {
   return (
-    <footer
-      style={{
-        marginTop: "0px",
-        padding: "3px",
-        backgroundColor: "#222",
-        color: "#fff",
-        textAlign: "center",
-      }}
-    >
+    <footer className="footer bg-dark text-light" style={style}>
       <p>© 2025 Park - Todos os direitos reservados</p>
     </footer>
   );
