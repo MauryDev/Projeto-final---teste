@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { ClienteService, ClienteForm } from "../api/clienteService";
 import Swal from "sweetalert2";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
-import api from "../api/api";
 import { AxiosError } from "axios";
 
 // Interface para o DTO de requisição
@@ -47,41 +46,41 @@ export default function PerfilUsuario() {
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  useEffect(() => {
-    if (!userId) {
-      setError("Usuário não autenticado");
+  // Usa useCallback para memorizar a função e evitar que ela seja recriada em cada render
+  const fetchCliente = useCallback(async () => {
+    if (!userId || authLoading) {
       setLoading(false);
       return;
     }
 
-    const fetchCliente = async () => {
-      try {
-        const data = await ClienteService.fetchClienteByUsuarioId(userId);
-        setCliente(data);
-        setFormData(data);
-        setIsEditing(false); // Por padrão, entra em modo de visualização
-        setError(null);
-      } catch (err) {
-        const axiosError = err as AxiosError;
-        if (axiosError.response && axiosError.response.status === 404) {
-          // Cliente não encontrado (404), inicializa o formulário vazio
-          setCliente(null);
-          setFormData({ nome: '', cpf: '', telefone: '', email: userEmail || '' });
-          setIsEditing(true); // Entra em modo de edição para o primeiro cadastro
-          setError(null);
-        } else {
-          console.error("Erro ao carregar cliente:", err);
-          setError("Erro ao carregar dados do cliente.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
 
-    if (!authLoading && userId) {
-      fetchCliente();
+    try {
+      const data = await ClienteService.fetchClienteByUsuarioId(userId);
+      setCliente(data);
+      setFormData(data);
+      setIsEditing(false);
+      setError(null);
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      if (axiosError.response && axiosError.response.status === 404) {
+        setCliente(null);
+        setFormData({ nome: '', cpf: '', telefone: '', email: userEmail || '' });
+        setIsEditing(true);
+        setError(null);
+      } else {
+        console.error("Erro ao carregar cliente:", err);
+        setError("Erro ao carregar dados do cliente.");
+      }
+    } finally {
+      setLoading(false);
     }
   }, [userId, authLoading, userEmail]);
+
+  // useEffect que executa a função de busca apenas quando suas dependências mudam
+  useEffect(() => {
+    fetchCliente();
+  }, [fetchCliente]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (formData) {
@@ -90,30 +89,24 @@ export default function PerfilUsuario() {
   };
 
   const handleSave = async () => {
-    if (!formData) return;
+    if (!formData || !userId) return;
     setLoading(true);
 
     try {
-      const payload: ClienteRequestDto = {
-        nome: formData.nome,
-        cpf: formData.cpf,
-        telefone: formData.telefone,
-        email: formData.email || '',
-      };
-
       if (cliente) {
-        // Se o cliente já existe, faz a requisição PUT para atualizar
-        const updated = await ClienteService.updateCliente(payload);
-        setCliente(updated);
-        setFormData(updated);
-        setIsEditing(false);
+        await ClienteService.updateCliente(formData);
       } else {
-        // Se o cliente não existe, faz a requisição POST para criar
-        const created = await api.post('/clientes', payload);
-        setCliente(created.data);
-        setFormData(created.data);
-        setIsEditing(false);
+        const payload: ClienteRequestDto = {
+          nome: formData.nome,
+          cpf: formData.cpf,
+          telefone: formData.telefone,
+          email: formData.email || '',
+        };
+        await ClienteService.createCliente(payload);
       }
+
+      // Após salvar, recarrega os dados para garantir que a interface reflita o estado atual
+      fetchCliente();
 
       Swal.fire({
         icon: 'success',
@@ -124,15 +117,22 @@ export default function PerfilUsuario() {
       });
 
     } catch (err) {
-      console.error(err);
+      setLoading(false);
+      const axiosError = err as AxiosError;
+      let errorMessage = 'Erro ao salvar perfil. Tente novamente.';
+
+      if (axiosError.response && axiosError.response.status === 409) {
+        errorMessage = 'O CPF informado já está cadastrado no sistema.';
+      } else {
+        console.error("Erro ao salvar cliente:", err);
+      }
+
       Swal.fire({
         icon: 'error',
         title: 'Erro!',
-        text: 'Erro ao salvar perfil. Tente novamente.',
+        text: errorMessage,
         showConfirmButton: true,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
